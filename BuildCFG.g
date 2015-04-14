@@ -63,12 +63,12 @@ function
    scope { String name;
            int count; }
    @init{ Block end; $function::count = 0; }
-   :  ^(ast=FUN id=ID { start = new Block($id.text + "_start");
+   :  ^(ast=FUN id=ID { start = new Block($id.text + ":start");
                         $function::name = $id.text; } p=parameters r=return_type
          d=declarations
          s=statement_list[start])
          {
-            end = new Block($id.text + "_end");
+            end = new Block($id.text + ":end");
             $s.end.connect(end);
          }
    ;
@@ -147,19 +147,19 @@ read
 
 conditional
    returns [Block end = null]
-   @init { end = new Block($function::name + "_ifend_" + $function::count++);
-           Block thenBlock = new Block($function::name + "_then_" + $function::count);
-           Block elseBlock = new Block($function::name + "_else_" + $function::count); }
+   @init { end = new Block($function::name + ":ifend:" + $function::count++);
+           Block thenBlock = new Block($function::name + ":then:" + $function::count);
+           Block elseBlock = new Block($function::name + ":else:" + $function::count); }
    :  ^(ast=IF g=expression[$statement::block] t=block[thenBlock] {$g.end.connect(thenBlock); thenBlock.connect(end);}
         (e=block[elseBlock] {$g.end.connect(elseBlock); elseBlock.connect(end);} )?)
    ;
 
 loop
    returns [Block end = null;]
-   @init { end = new Block($function::name + "_whileend_" + $function::count++);
-           Block expBlock = new Block($function::name + "_whiletest_" + $function::count);
+   @init { end = new Block($function::name + ":whileend:" + $function::count++);
+           Block expBlock = new Block($function::name + ":whiletest:" + $function::count);
            $statement::block.connect(expBlock);
-           Block bodyBlock = new Block($function::name + "_whilebody_" + $function::count);
+           Block bodyBlock = new Block($function::name + ":whilebody:" + $function::count);
            expBlock.connect(bodyBlock);
            expBlock.connect(end);
            bodyBlock.connect(expBlock); }
