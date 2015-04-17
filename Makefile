@@ -1,29 +1,18 @@
-SOURCES=$(shell echo *.java)
+SOURCES=Block.java BoolType.java Check.java Compile.java FunType.java IntType.java NullType.java RecType.java StructType.java SyntaxException.java Type.java VoidType.java
 CLASSES=$(SOURCES:.java=.class)
 
 all: $(CLASSES)
 
-%.class : %.java antlr.generated 
+%.class : %.java
 	javac $<
 
-antlr.generated: antlr.generated.mini antlr.generated.json antlr.generated.typecheck antlr.generated.buildcfg
-	touch antlr.generated
+TypeCheck.java BuildCFG.java : %.java : %.g
+	java org.antlr.Tool $<
 
-antlr.generated.mini : Mini.g
-	java org.antlr.Tool Mini.g
-	touch antlr.generated.mini
+MiniLexer.java : Mini.g
+	java org.antlr.Tool $<
 
-antlr.generated.json : ToJSON.g
-	java org.antlr.Tool ToJSON.g
-	touch antlr.generated.json
-
-antlr.generated.typecheck : TypeCheck.g
-	java org.antlr.Tool TypeCheck.g
-	touch antlr.generated.typecheck
-
-antlr.generated.buildcfg : BuildCFG.g
-	java org.antlr.Tool BuildCFG.g
-	touch antlr.generated.buildcfg
+Check.class Compile.class : MiniLexer.class TypeCheck.class BuildCFG.class
 
 clean:
-	\rm *generated* MiniParser.java MiniLexer.java ToJSON.java TypeCheck.java Mini.tokens ToJSON.tokens TypeCheck.tokens *.class
+	rm -f BuildCFG.java MiniParser.java MiniLexer.java TypeCheck.java *.tokens *.class
