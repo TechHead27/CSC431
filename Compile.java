@@ -5,6 +5,7 @@ import org.antlr.stringtemplate.*;
 import java.io.*;
 import java.util.Vector;
 import java.util.HashMap;
+import java.util.ArrayList;
 import javax.json.JsonValue;
 import javax.json.Json;
 
@@ -28,9 +29,14 @@ public class Compile
       {
          try
          {
-            translate(tree, tokens);
+            ArrayList<Block> functionBlocks = translate(tree, tokens);
             System.out.println("No type errors.");
-
+            if (_dumpIL)
+               System.err.println(functionBlocks.size());
+               for (Block b : functionBlocks)
+               {
+                  System.out.println(b.getGraph());
+               }
          }
          catch (SyntaxException e)
          {
@@ -95,7 +101,7 @@ public class Compile
       return null;
    }
 
-   private static void translate(CommonTree tree, CommonTokenStream tokens) throws SyntaxException
+   private static ArrayList<Block> translate(CommonTree tree, CommonTokenStream tokens) throws SyntaxException
    {
       try
       {
@@ -103,12 +109,18 @@ public class Compile
          nodes.setTokenStream(tokens);
          TypeCheck tparser = new TypeCheck(nodes);
 
+         nodes = new CommonTreeNodeStream(tree);
+         nodes.setTokenStream(tokens);
+         BuildCFG builder = new BuildCFG(nodes);
+
          tparser.translate();
+         return builder.translate();
       }
       catch (org.antlr.runtime.RecognitionException e)
       {
          error(e.toString());
       }
+      return null;
    }
 
    private static void error(String msg)

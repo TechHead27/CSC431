@@ -19,13 +19,16 @@ options
    ArrayList<Block> functionStarts = new ArrayList<Block>();
 }
 
-translate throws SyntaxException
+translate
+   returns [ArrayList<Block> blocks = null;]
    :  ^(PROGRAM t=types d=declarations f=functions)
+      {
+         blocks = functionStarts;
+      }
    ;
 
 types
    :  ^(TYPES (t=type_decl)*)
-   |
    ;
 
 type_decl
@@ -55,7 +58,7 @@ decl_list
    ;
 
 functions
-   :  ^(FUNCS (f = function {functionStarts.add($f.start);} )*)
+   :  ^(FUNCS (f=function {functionStarts.add($f.start);} )*)
    ;
 
 function 
@@ -65,8 +68,7 @@ function
    @init{ Block end; $function::count = 0; }
    :  ^(ast=FUN id=ID { start = new Block($id.text + ":start");
                         $function::name = $id.text; } p=parameters r=return_type
-         d=declarations
-         s=statement_list[start])
+         d=declarations s=statement_list[start])
          {
             end = new Block($id.text + ":end");
             $s.end.connect(end);
@@ -79,8 +81,6 @@ parameters
 
 param_decl
    :  ^(DECL ^(TYPE t=type) id=ID)
-      {
-      }
    ;
 
 return_type
@@ -147,19 +147,21 @@ read
 
 conditional
    returns [Block end = null]
-   @init { end = new Block($function::name + ":ifend:" + $function::count++);
+   @init { end = new Block($function::name + ":ifend:" + $function::count);
            Block thenBlock = new Block($function::name + ":then:" + $function::count);
-           Block elseBlock = new Block($function::name + ":else:" + $function::count); }
+           Block elseBlock = new Block($function::name + ":else:" + $function::count);
+           $function::count++; }
    :  ^(ast=IF g=expression[$statement::block] t=block[thenBlock] {$g.end.connect(thenBlock); thenBlock.connect(end);}
         (e=block[elseBlock] {$g.end.connect(elseBlock); elseBlock.connect(end);} )?)
    ;
 
 loop
    returns [Block end = null;]
-   @init { end = new Block($function::name + ":whileend:" + $function::count++);
+   @init { end = new Block($function::name + ":whileend:" + $function::count);
            Block expBlock = new Block($function::name + ":whiletest:" + $function::count);
            $statement::block.connect(expBlock);
            Block bodyBlock = new Block($function::name + ":whilebody:" + $function::count);
+           $function::count++;
            expBlock.connect(bodyBlock);
            expBlock.connect(end);
            bodyBlock.connect(expBlock); }
@@ -176,18 +178,14 @@ delete
 
 return_stmt
    returns [Block end = null;]
-   :  ^(ast=RETURN (e=expression[$statement::block] )?)
-      {
-         end = $e.end;
-      }
+   @init { end = $statement::block; }
+   :  ^(ast=RETURN (e=expression[$statement::block] {end = $e.end;} )?)
    ;
 
 invocation_stmt
    returns [Block end = null;]
+   @init { end = $statement::block; }
    :  ^(ast=INVOKE id=ID ^(ARGS (e=expression[$statement::block] )*))
-      {
-         end = $e.end;
-      }
    ;
 
 lvalue 
@@ -204,7 +202,7 @@ expression[Block currentBlock]
    |  ^((ast=AND | ast=OR) lft=expression[currentBlock] rht=expression[currentBlock])
    |  ^(ast=NOT e=expression[currentBlock])
    |  ^(ast=NEG e=expression[currentBlock])
-   |  ^(ast=DOT    e=expression[currentBlock] id=ID)
+   |  ^(ast=DOT e=expression[currentBlock] id=ID)
    |  ie=invocation_exp[currentBlock]
    |  id=ID
    |  i=INTEGER

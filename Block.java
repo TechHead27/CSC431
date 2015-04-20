@@ -1,8 +1,12 @@
+import java.util.ArrayList;
+import java.util.LinkedList;
+
 public class Block
 {
    private ArrayList<Block> pred;
    private ArrayList<Block> succ;
    private String label;
+   private boolean visited = false;
 
    public Block()
    {
@@ -26,11 +30,41 @@ public class Block
 
    public Block[] getPred()
    {
-      return pred.toArray();
+      return (Block[])pred.toArray();
    }
 
    public Block[] getSucc()
    {
-      return succ.toArray();
+      return (Block[])succ.toArray();
+   }
+
+   public String getLabel()
+   {
+      return label;
+   }
+
+   @Override
+   public String toString()
+   {
+      return label + "\n";
+   }
+
+   public String getGraph()
+   {
+      String ret = "";
+      LinkedList<Block> toVisit = new LinkedList<Block>();
+      toVisit.push(this);
+
+      while (!toVisit.isEmpty())
+      {
+         Block current = toVisit.pop();
+         if (!current.visited)
+         {
+            current.visited = true;
+            toVisit.addAll(current.succ);
+            ret += current.toString();
+         }
+      }
+      return ret;
    }
 }
