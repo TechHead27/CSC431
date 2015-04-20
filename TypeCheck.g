@@ -252,8 +252,7 @@ lvalue
 
 expression
    returns [Type typeName = null] throws SyntaxException
-   :  ^((ast=LT | ast=GT | ast=NE | ast=LE | ast=GE | ast=PLUS
-         | ast=MINUS | ast=TIMES | ast=DIVIDE)
+   :  ^((ast=PLUS | ast=MINUS | ast=TIMES | ast=DIVIDE)
          lft=expression rht=expression)
       {
          if (!($lft.typeName.getClass().equals(IntType.class) && $rht.typeName.getClass().equals(IntType.class)))
@@ -261,6 +260,14 @@ expression
             throw new SyntaxException("Need int at " + $ast.line);
          }
          $typeName = $lft.typeName;
+      }
+   |  ^((ast=LT | ast=GT | ast=NE | ast=LE | ast=GE) lft=expression rht=expression)
+      {
+         if (!($lft.typeName.getClass().equals(IntType.class) && $rht.typeName.getClass().equals(IntType.class)))
+         {
+            throw new SyntaxException("Need int at " + $ast.line);
+         }
+         $typeName = new BoolType();
       }
    |  ^(ast=EQ lft=expression rht=expression)
       {
@@ -272,7 +279,7 @@ expression
       }
    |  ^((ast=AND | ast=OR) lft=expression rht=expression)
       {
-         if(!($lft.typeName.getClass().equals(BoolType.class) && $rht.typeName.getClass().equals(BoolType.class)))
+         if(!($lft.typeName.equals(new BoolType()) && $rht.typeName.equals(new BoolType())))
          {
             throw new SyntaxException("Need boolean at " + $ast.line);
          }
