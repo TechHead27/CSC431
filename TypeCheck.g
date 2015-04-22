@@ -38,7 +38,7 @@ types
 type_decl
    :  ^(ast=STRUCT id=ID {structs.put($id.text, new RecType());} n=nested_decl)
       {
-         structs.put($id.text, new StructType($n.hash));
+         structs.put($id.text, new StructType($n.hash, null));
       }
    ;
 
@@ -95,7 +95,7 @@ function
          {
             if ($id.text.equals("main"))
                mainFound = true;
-            if ($s.retCheck == false)
+            if ($s.retCheck == false && !$function::ret.equals(new VoidType()))
                throw new SyntaxException("Function " + $id.text + " is missing a return for one or more cases");
          }
    ;
@@ -303,7 +303,7 @@ expression
          {
             throw new SyntaxException("Need same types at " + $ast.line);
          }
-         $typeName = $lft.typeName;
+         $typeName = new BoolType();
       }
    |  ^((ast=AND | ast=OR) lft=expression rht=expression)
       {
@@ -311,7 +311,7 @@ expression
          {
             throw new SyntaxException("Need boolean at " + $ast.line);
          }
-         $typeName = $lft.typeName;
+         $typeName = new BoolType();
       }
    |  ^(ast=NOT e=expression)
       {
