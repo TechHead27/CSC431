@@ -8,6 +8,7 @@ public class Block
    private String label;
    private boolean visited = false;
    ArrayList<Iloc> ilocs = new ArrayList<Iloc>();
+   private boolean if_fix = false;
 
    public Block()
    {
@@ -72,8 +73,11 @@ public class Block
          {
             current.visited = true;
             String[] parts = current.label.split(":");
-            if (parts[1].equals("whiletest"))
+            if (parts[1].equals("ifend") && !current.if_fix)
             {
+               current.if_fix = true;
+               current.visited = false;
+               toVisit.push(current);
                System.err.println("Pushing " + current.succ.get(1).label);
                toVisit.push(current.succ.get(1));
                System.err.println("Pushing " + current.succ.get(0).label);
@@ -81,13 +85,23 @@ public class Block
             }
             else
             {
-               for (Block b : current.succ)
+               if (parts[1].equals("whiletest"))
                {
-                  toVisit.push(b);
+                  System.err.println("Pushing " + current.succ.get(1).label);
+                  toVisit.push(current.succ.get(1));
+                  System.err.println("Pushing " + current.succ.get(0).label);
+                  toVisit.push(current.succ.get(0));
                }
+               else
+               {
+                  for (Block b : current.succ)
+                  {
+                     toVisit.push(b);
+                  }
+               }
+               ret += current.toString();
+               ret += current.printIloc();
             }
-            ret += current.toString();
-            ret += current.printIloc();
          }
       }
       return ret;
