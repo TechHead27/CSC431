@@ -63,15 +63,29 @@ public class Block
    {
       String ret = "";
       LinkedList<Block> toVisit = new LinkedList<Block>();
-      toVisit.push(this);
+      toVisit.offer(this);
 
       while (!toVisit.isEmpty())
       {
-         Block current = toVisit.pop();
-         if (!current.visited)
+         Block current = toVisit.poll();
+         if (!(current.visited))
          {
             current.visited = true;
-            toVisit.addAll(current.succ);
+            String[] parts = current.label.split(":");
+            if (parts[1].equals("whiletest"))
+            {
+               System.err.println("Pushing " + current.succ.get(1).label);
+               toVisit.push(current.succ.get(1));
+               System.err.println("Pushing " + current.succ.get(0).label);
+               toVisit.push(current.succ.get(0));
+            }
+            else
+            {
+               for (Block b : current.succ)
+               {
+                  toVisit.push(b);
+               }
+            }
             ret += current.toString();
             ret += current.printIloc();
          }
