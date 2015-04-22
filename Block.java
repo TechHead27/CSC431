@@ -7,6 +7,7 @@ public class Block
    private ArrayList<Block> succ;
    private String label;
    private boolean visited = false;
+   ArrayList<Iloc> ilocs = new ArrayList<Iloc>();
 
    public Block()
    {
@@ -49,6 +50,15 @@ public class Block
       return label + "\n";
    }
 
+   public String printIloc()
+   {
+      String ret = "";
+      for (Iloc iloc: ilocs) {
+         ret += iloc.toString() + "\n";
+      }
+      return ret;
+   }
+
    public String getGraph()
    {
       String ret = "";
@@ -63,8 +73,15 @@ public class Block
             current.visited = true;
             toVisit.addAll(current.succ);
             ret += current.toString();
+            ret += current.printIloc();
          }
       }
       return ret;
+   }
+
+   public void addIloc(String instruction) {
+      System.out.println(ilocs.size());
+      //ilocs.add(new Iloc());
+      //ilocs.add(new Iloc(instruction));
    }
 }

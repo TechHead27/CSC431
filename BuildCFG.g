@@ -65,23 +65,53 @@ function
    returns [Block start = null;]
    scope { String name;
            int count;
-           Block end;}
-   @init { $function::count = 0; }
+           Block end;
+           ArrayList<String> regValues;}
+   @init { $function::count = 0; $function::regValues = new ArrayList<String>();}
    :  ^(ast=FUN id=ID { start = new Block($id.text + ":start");
+                        start.ilocs.add(new Iloc($id.text + ":"));
                         $function::name = $id.text;
-                        $function::end = new Block($id.text + ":end"); } p=parameters r=return_type
-         d=declarations s=statement_list[start])
+                        $function::end = new Block($id.text + ":end"); } p=parameters[start] r=return_type
+         d=fun_decls s=statement_list[$p.end])
          {
             $s.end.connect($function::end);
          }
    ;
 
-parameters
+fun_decls
+   :  ^(DECLS (fun_decl_list)*)
+   ;
+
+fun_decl_list
+   :  ^(DECLLIST ^(TYPE t=type) (id=ID)+)
+      {
+         if (!$function::regValues.add($id.text))
+         {
+            // throw error
+         }
+      }
+   ;
+
+parameters[Block currentBlock]
+   returns [Block end = null;]
+   scope {Block blk;}
+   @init{$parameters::blk = currentBlock;}
    :  ^(PARAMS (p=param_decl)*)
+      {
+         end = $parameters::blk;
+      }
    ;
 
 param_decl
    :  ^(DECL ^(TYPE t=type) id=ID)
+      {
+         if (!$function::regValues.add($id.text)) {
+            // throw error
+         }
+         //loadinargument num, 0, r0
+         int temp = $function::regValues.indexOf($id.text);
+         $parameters::blk.ilocs.add(new Iloc("loadinargument", $id.text, ""+temp, "r"+temp));
+      }
    ;
 
 return_type
@@ -99,7 +129,7 @@ statement[Block currentBlock]
    @init { $statement::block = currentBlock; }
    :  (s=block[currentBlock]
       |  s=assignment
-      |  s=print
+      |  s=print //
       |  s=invocation_stmt
       |  s=delete
       |  s=read
@@ -135,6 +165,7 @@ print
    :  ^(ast=PRINT e=expression[$statement::block] (ENDL)?)
       {
          end = $statement::block;
+         $end.ilocs.add(new Iloc("print", "r"));
       }
    ;
 
@@ -201,9 +232,17 @@ lvalue
    ;
 
 expression[Block currentBlock] 
-   :  ^((ast=LT | ast=GT | ast=NE | ast=LE | ast=GE | ast=PLUS
-         | ast=MINUS | ast=TIMES | ast=DIVIDE)
-         lft=expression[currentBlock] rht=expression[currentBlock])
+   returns [int reg = -1, Block end = null]
+   @init {$end = currentBlock;}
+   :  ^(ast=LT lft=expression[currentBlock] rht=expression[currentBlock])
+   |  ^(ast=GT lft=expression[currentBlock] rht=expression[currentBlock])
+   |  ^(ast=NE lft=expression[currentBlock] rht=expression[currentBlock])
+   |  ^(ast=LE lft=expression[currentBlock] rht=expression[currentBlock])
+   |  ^(ast=GE lft=expression[currentBlock] rht=expression[currentBlock])
+   |  ^(ast=PLUS lft=expression[currentBlock] rht=expression[currentBlock])
+   |  ^(ast=MINUS lft=expression[currentBlock] rht=expression[currentBlock])
+   |  ^(ast=TIMES lft=expression[currentBlock] rht=expression[currentBlock])
+   |  ^(ast=DIVIDE lft=expression[currentBlock] rht=expression[currentBlock])
    |  ^(ast=EQ lft=expression[currentBlock] rht=expression[currentBlock])
    |  ^((ast=AND | ast=OR) lft=expression[currentBlock] rht=expression[currentBlock])
    |  ^(ast=NOT e=expression[currentBlock])
