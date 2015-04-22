@@ -69,7 +69,6 @@ function
            ArrayList<String> regValues;}
    @init { $function::count = 0; $function::regValues = new ArrayList<String>();}
    :  ^(ast=FUN id=ID { start = new Block($id.text + ":start");
-                        start.ilocs.add(new Iloc($id.text + ":"));
                         $function::name = $id.text;
                         $function::end = new Block($id.text + ":end"); } p=parameters[start] r=return_type
          d=fun_decls s=statement_list[$p.end])
@@ -105,9 +104,8 @@ parameters[Block currentBlock]
 param_decl
    :  ^(DECL ^(TYPE t=type) id=ID)
       {
-         if (!$function::regValues.add($id.text)) {
-            // throw error
-         }
+         $function::regValues.add($id.text);
+
          //loadinargument num, 0, r0
          int temp = $function::regValues.indexOf($id.text);
          $parameters::blk.ilocs.add(new Iloc("loadinargument", $id.text, ""+temp, "r"+temp));
@@ -232,8 +230,8 @@ lvalue
    ;
 
 expression[Block currentBlock] 
-   returns [int reg = -1, Block end = null]
-   @init {$end = currentBlock;}
+   returns [int reg = -1; Block end = null]
+   @init {end = currentBlock;}
    :  ^(ast=LT lft=expression[currentBlock] rht=expression[currentBlock])
    |  ^(ast=GT lft=expression[currentBlock] rht=expression[currentBlock])
    |  ^(ast=NE lft=expression[currentBlock] rht=expression[currentBlock])
