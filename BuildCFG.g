@@ -64,14 +64,15 @@ functions
 function 
    returns [Block start = null;]
    scope { String name;
-           int count; }
-   @init{ Block end; $function::count = 0; }
+           int count;
+           Block end;}
+   @init { $function::count = 0; }
    :  ^(ast=FUN id=ID { start = new Block($id.text + ":start");
-                        $function::name = $id.text; } p=parameters r=return_type
+                        $function::name = $id.text;
+                        $function::end = new Block($id.text + ":end"); } p=parameters r=return_type
          d=declarations s=statement_list[start])
          {
-            end = new Block($id.text + ":end");
-            $s.end.connect(end);
+            $s.end.connect($function::end);
          }
    ;
 
@@ -180,7 +181,9 @@ return_stmt
    returns [Block end = null;]
    :  ^(ast=RETURN (e=expression[$statement::block])?)
       {
-         end = $statement::block;
+         $statement::block.connect($function::end);
+         end = new Block($function::name + ":afterreturn:" + $function::count);
+         $function::count++;
       }
    ;
 
