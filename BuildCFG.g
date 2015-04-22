@@ -84,8 +84,9 @@ function
            ArrayList<String> regValues;
            HashMap<String, Type> localHash;}
    @init { $function::count = 0; $function::regValues = new ArrayList<String>();
-           $function::localHash = new HashMap<String, Table>(sTable);}
+           $function::localHash = new HashMap<String, Type>(sTable);}
    :  ^(ast=FUN id=ID { start = new Block($id.text + ":start");
+                        start.ilocs.add(new Iloc($id.text + ":"));
                         $function::name = $id.text;
                         $function::end = new Block($id.text + ":end"); } p=parameters[start] r=return_type
          d=fun_decls s=statement_list[$p.end])
@@ -203,18 +204,11 @@ read
    :  ^(ast=READ l=lvalue[false])
       {
          end = $statement::block;
-         if ($l.dot)
-         {
-
-         }
-         else
-         {
-            int reg = $function::regValues.size();
-            $function::regValues.add("::read");
-            end.ilocs.add(new Iloc("addi", "rarp", $function::regValues.get($l.reg), "r" + reg));
-            end.ilocs.add(new Iloc("read", "r" + reg));
-            end.ilocs.add(new Iloc("loadai", "rarp", $function::regValues.get($l.reg), "r" + $l.reg));
-         }
+         int reg = $function::regValues.size();
+         $function::regValues.add("::read");
+         end.ilocs.add(new Iloc("addi", "rarp", $function::regValues.get($l.reg), "r" + reg));
+         end.ilocs.add(new Iloc("read", "r" + reg));
+         end.ilocs.add(new Iloc("loadai", "rarp", $function::regValues.get($l.reg), "r" + $l.reg));
       }
    ;
 
@@ -240,8 +234,8 @@ conditional
                      elseBlock.ilocs.add(new Iloc("L" + else_cond + ":"));
                      end.ilocs.add(new Iloc("L" + finally_cond + ":"));
                   }
-              t=block[thenBlock] {thenBlock.ilocs.add(new Iloc("jumpi", "L" + finally_cond)); $statement::block.connect(end); end.connect(thenBlock);}
-              (e=block[elseBlock] {end.connect(elseBlock);} )?)
+              t=block[thenBlock] {thenBlock.ilocs.add(new Iloc("jumpi", "L" + finally_cond)); $statement::block.connect(end); end.connect(thenBlock); end.connect(elseBlock);}
+              (e=block[elseBlock])?)
    ;
 
 loop
@@ -380,7 +374,7 @@ expression[Block currentBlock]
          {
             $reg = $function::regValues.size();
             $function::regValues.add("::plus");
-            currentBlock.ilocs.add(new Iloc("plus", "r" + $lft.reg, "r" + $rht.reg, "r" + $reg));
+            currentBlock.ilocs.add(new Iloc("add", "r" + $lft.reg, "r" + $rht.reg, "r" + $reg));
          }
    |  ^(ast=MINUS lft=expression[currentBlock] rht=expression[currentBlock])
          {
@@ -437,7 +431,9 @@ expression[Block currentBlock]
          }
    |  ^(ast=DOT e=expression[currentBlock] id=ID)
          {
-
+            $reg = $function::regValues.size();
+            $function::regValues.add($id.text);
+            currentBlock.ilocs.add(new Iloc("loadai", "r" + $e.reg, $id.text, "r" + $reg));
          }
    |  ie=invocation_exp[currentBlock] {$reg = $ie.reg;}
    |  id=ID
@@ -467,7 +463,9 @@ expression[Block currentBlock]
          }
    |  ^(ast=NEW id=ID)
          {
-
+            $reg = $function::regValues.size();
+            $function::regValues.add("::new");
+            currentBlock.ilocs.add(new Iloc("new", ""+((StructType)structs.get($id.text)).size(), "r" + $reg));
          }
    |  ast=NULL
          {

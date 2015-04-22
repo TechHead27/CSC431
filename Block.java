@@ -96,7 +96,7 @@ public class Block
                {
                   for (Block b : current.succ)
                   {
-                     toVisit.push(b);
+                     toVisit.offer(b);
                   }
                }
                ret += current.toString();
