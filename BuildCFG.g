@@ -146,12 +146,12 @@ statement[Block currentBlock]
    :  (s=block[currentBlock]
       |  s=assignment
       |  s=print //
-      |  s=invocation_stmt
+      |  s=invocation_stmt //
       |  s=delete
       |  s=read
-      |  s=return_stmt {$returns = true;}
-      |  s=conditional
-      |  s=loop
+      |  s=return_stmt {$returns = true;} //
+      |  s=conditional //
+      |  s=loop //
       )
    {
       $end = $s.end;
@@ -199,6 +199,18 @@ read
    :  ^(ast=READ l=lvalue)
       {
          end = $statement::block;
+         if ($l.dot)
+         {
+
+         }
+         else
+         {
+            int reg = $function::regValues.size();
+            $function::regValues.add("::read");
+            end.ilocs.add(new Iloc("addi", "rarp", $function::regValues.get($l.reg), "r" + reg));
+            end.ilocs.add(new Iloc("read", "r" + reg));
+            end.ilocs.add(new Iloc("loadai", "rarp", $function::regValues.get($l.reg), "r" + $l.reg));
+         }
       }
    ;
 
@@ -299,9 +311,29 @@ lvalue
 expression[Block currentBlock] 
    returns [int reg = -1;]
    :  ^(ast=LT lft=expression[currentBlock] rht=expression[currentBlock])
-
+         {
+            $reg = $function::regValues.size();
+            $function::regValues.add("::0");
+            currentBlock.ilocs.add(new Iloc("loadi", "0", "r" + $reg));
+            currentBlock.ilocs.add(new Iloc("comp", "r" + $lft.reg, "r" + $rht.reg, "ccr"));
+            currentBlock.ilocs.add(new Iloc("movlti", "ccr", "1", "r" + $reg));
+         }
    |  ^(ast=GT lft=expression[currentBlock] rht=expression[currentBlock])
+         {
+            $reg = $function::regValues.size();
+            $function::regValues.add("::0");
+            currentBlock.ilocs.add(new Iloc("loadi", "0", "r" + $reg));
+            currentBlock.ilocs.add(new Iloc("comp", "r" + $lft.reg, "r" + $rht.reg, "ccr"));
+            currentBlock.ilocs.add(new Iloc("movgti", "ccr", "1", "r" + $reg));
+         }
    |  ^(ast=NE lft=expression[currentBlock] rht=expression[currentBlock])
+         {
+            $reg = $function::regValues.size();
+            $function::regValues.add("::0");
+            currentBlock.ilocs.add(new Iloc("loadi", "0", "r" + $reg));
+            currentBlock.ilocs.add(new Iloc("comp", "r" + $lft.reg, "r" + $rht.reg, "ccr"));
+            currentBlock.ilocs.add(new Iloc("movnei", "ccr", "1", "r" + $reg));
+         }
    |  ^(ast=LE lft=expression[currentBlock] rht=expression[currentBlock])
          {
             $reg = $function::regValues.size();
@@ -311,6 +343,13 @@ expression[Block currentBlock]
             currentBlock.ilocs.add(new Iloc("movlei", "ccr", "1", "r" + $reg));
          }
    |  ^(ast=GE lft=expression[currentBlock] rht=expression[currentBlock])
+         {
+            $reg = $function::regValues.size();
+            $function::regValues.add("::0");
+            currentBlock.ilocs.add(new Iloc("loadi", "0", "r" + $reg));
+            currentBlock.ilocs.add(new Iloc("comp", "r" + $lft.reg, "r" + $rht.reg, "ccr"));
+            currentBlock.ilocs.add(new Iloc("movgei", "ccr", "1", "r" + $reg));
+         }
    |  ^(ast=PLUS lft=expression[currentBlock] rht=expression[currentBlock])
          {
             $reg = $function::regValues.size();
@@ -350,8 +389,24 @@ expression[Block currentBlock]
             currentBlock.ilocs.add(new Iloc("and", "r" + $lft.reg, "r" + $rht.reg, "r" + $reg));
          }
    |  ^(ast=OR lft=expression[currentBlock] rht=expression[currentBlock])
+         {
+            $reg = $function::regValues.size();
+            $function::regValues.add("::or");
+            currentBlock.ilocs.add(new Iloc("or", "r" + $lft.reg, "r" + $rht.reg, "r" + $reg));
+         }
    |  ^(ast=NOT e=expression[currentBlock])
+         {
+            
+         }
    |  ^(ast=NEG e=expression[currentBlock])
+         {
+            int immed = $function::regValues.size();
+            $function::regValues.add("::-1");
+            currentBlock.ilocs.add(new Iloc("loadi", "-1", "r" + immed));
+            $reg = $function::regValues.size();
+            $function::regValues.add("::mult");
+            currentBlock.ilocs.add(new Iloc("mult", "r" + $e.reg, "r" + $immed.reg, "r" + $reg));
+         }
    |  ^(ast=DOT e=expression[currentBlock] id=ID)
    |  ie=invocation_exp[currentBlock] {$reg = $ie.reg;}
    |  id=ID
