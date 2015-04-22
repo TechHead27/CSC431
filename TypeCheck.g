@@ -162,15 +162,33 @@ assignment throws SyntaxException
 
 print throws SyntaxException
    :  ^(ast=PRINT e=expression (ENDL)?)
+      {
+         if (!$e.typeName.equals(new IntType()))
+         {
+            throw new SyntaxException("Printing non-integer at " + $ast.line);
+         }
+      }
    ;
 
 read throws SyntaxException
    :  ^(ast=READ l=lvalue)
+      {
+         if (!$l.typeName.equals(new IntType()))
+         {
+            throw new SyntaxException("Read into non-integer at " + $ast.line);
+         }
+      }
    ;
 
 conditional
    returns [boolean retCheck = false] throws SyntaxException
    :  ^(ast=IF g=expression t=block (e=block {$retCheck = $t.retCheck && $e.retCheck;})?)
+      {
+         if (!$g.typeName.equals(new BoolType()))
+         {
+            throw new SyntaxException("Non-boolean condition at " + $ast.line);
+         }
+      }
    ;
 
 loop
@@ -178,11 +196,21 @@ loop
    :  ^(ast=WHILE e=expression b=block expression)
       {
          $retCheck = $b.retCheck;
+         if (!$e.typeName.equals(new BoolType()))
+         {
+            throw new SyntaxException("Non-boolean condition at " + $ast.line);
+         }
       }
    ;
 
 delete throws SyntaxException
    :  ^(ast=DELETE e=expression)
+      {
+         if (!$e.typeName.getClass().equals(StructType.class))
+         {
+            throw new SyntaxException("Deletion of non-struct at " + $ast.line);
+         }
+      }
    ;
 
 return_stmt throws SyntaxException
