@@ -1,12 +1,15 @@
 import java.util.HashMap;
+import java.util.ArrayList;
 
 public class StructType extends Type
 {
    private HashMap<String, Type> fields;
+   private ArrayList<String> fieldOffsets;
 
-   public StructType(HashMap<String, Type> h)
+   public StructType(HashMap<String, Type> h, ArrayList<String> stuff)
    {
       fields = h;
+      fieldOffsets = stuff;
    }
 
    public Type getFieldType(String name)
@@ -16,6 +19,11 @@ public class StructType extends Type
          return this;
       else
          return ret;
+   }
+
+   public int getFieldOffset(String name)
+   {
+      return fieldOffsets.indexOf(name);
    }
 
    public boolean equals(Object o)

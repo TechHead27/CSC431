@@ -12,10 +12,13 @@ options
 @header
 {
    import java.util.ArrayList;
+   import java.util.HashMap;
 }
 
 @members
 {
+   private HashMap<String, Type> structs = new HashMap<String, Type>();
+   private HashMap<String, Type> sTable = new HashMap<String, Type>();
    ArrayList<Block> functionStarts = new ArrayList<Block>();
 }
 
@@ -32,21 +35,32 @@ types
    ;
 
 type_decl
-   :  ^(ast=STRUCT id=ID n=nested_decl)
+   :  ^(ast=STRUCT id=ID {structs.put($id.text, new RecType());} n=nested_decl)
+      {
+         structs.put($id.text, new StructType($n.hash, $n.fields));
+      }
    ;
 
 nested_decl
-   :  (f=field_decl)+
+   returns [HashMap<String, Type> hash, ArrayList<String> fields]
+   @init {$hash = new HashMap<String, Type>(); $fields = new ArrayList<String>();}
+   :  (f=field_decl { $hash.put($f.name, $f.fieldType); $fields.add($f.name); })+
    ;
 
 field_decl
+   returns [String name, Type fieldType]
    :  ^(DECL ^(TYPE t=type) id=ID)
+      {
+         $name = $id.text;
+         $fieldType = $t.typeName;
+      }
    ;
 
 type
-   :  INT 
-   |  BOOL 
-   |  ^(STRUCT id=ID) 
+   returns [Type typeName = null;]
+   :  INT { $typeName = new IntType(); }
+   |  BOOL { $typeName = new BoolType(); }
+   |  ^(STRUCT id=ID) { $typeName = structs.get($id.text); }
    ;
 
 declarations
