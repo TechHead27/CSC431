@@ -230,8 +230,7 @@ lvalue
    ;
 
 expression[Block currentBlock] 
-   returns [int reg = -1; Block end = null]
-   @init {end = currentBlock;}
+   returns [int reg = -1;]
    :  ^(ast=LT lft=expression[currentBlock] rht=expression[currentBlock])
    |  ^(ast=GT lft=expression[currentBlock] rht=expression[currentBlock])
    |  ^(ast=NE lft=expression[currentBlock] rht=expression[currentBlock])
