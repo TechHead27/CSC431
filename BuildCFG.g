@@ -175,12 +175,12 @@ statement_list[Block block]
 
 assignment
    returns [Block end = null;]
-   :  ^(ast=ASSIGN e=expression[$statement::block] l=lvalue)
+   :  ^(ast=ASSIGN e=expression[$statement::block] l=lvalue[false])
       {
          end = $statement::block;
          if ($l.dot)
          {
-
+            $end.ilocs.add(new Iloc("storeai", "r" + $e.reg, "r" + $l.reg, $l.field_name));
          }
          else
          {
@@ -200,7 +200,7 @@ print
 
 read
    returns [Block end = null;]
-   :  ^(ast=READ l=lvalue)
+   :  ^(ast=READ l=lvalue[false])
       {
          end = $statement::block;
          if ($l.dot)
@@ -306,10 +306,32 @@ invocation_stmt
       }
    ;
 
-lvalue 
-   returns [int reg = -1, boolean dot = false]
+lvalue[boolean rec]
+   returns [int reg = -1, boolean dot = false, String field_name = null]
    :  id=ID {$reg = $function::regValues.indexOf($id.text);}
-   |  ^(ast=DOT l=lvalue id=ID)
+   |  ^(ast=DOT l=lvalue[true] id=ID)
+         {
+            $dot = true;
+            $field_name = $id.text;
+            
+            if (rec)
+            {
+               int temp = $function::regValues.size();
+               $function::regValues.add("::temp");
+               $statement::block.ilocs.add(new Iloc("mov", "r" + $l.reg, "r" + temp));
+               $reg = $function::regValues.size();
+               $function::regValues.add("::struct");
+               $statement::block.ilocs.add(new Iloc("loadai", "r" + temp, $id.text, "r" + $reg));
+
+            }
+            else
+            {  
+               $reg = $function::regValues.size();
+               $function::regValues.add("::struct");
+               $statement::block.ilocs.add(new Iloc("mov", "r" + $l.reg, "r" + $reg));
+
+            }
+         }
    ;
 
 expression[Block currentBlock] 
@@ -400,7 +422,9 @@ expression[Block currentBlock]
          }
    |  ^(ast=NOT e=expression[currentBlock])
          {
-            
+            $reg = $function::regValues.size();
+            $function::regValues.add("::not");
+            currentBlock.ilocs.add(new Iloc("xori", "r" + $e.reg, "1","r" + $reg));
          }
    |  ^(ast=NEG e=expression[currentBlock])
          {
@@ -409,9 +433,12 @@ expression[Block currentBlock]
             currentBlock.ilocs.add(new Iloc("loadi", "-1", "r" + immed));
             $reg = $function::regValues.size();
             $function::regValues.add("::mult");
-            currentBlock.ilocs.add(new Iloc("mult", "r" + $e.reg, "r" + $immed.reg, "r" + $reg));
+            currentBlock.ilocs.add(new Iloc("mult", "r" + $e.reg, "r" + immed, "r" + $reg));
          }
    |  ^(ast=DOT e=expression[currentBlock] id=ID)
+         {
+
+         }
    |  ie=invocation_exp[currentBlock] {$reg = $ie.reg;}
    |  id=ID
          {
@@ -427,9 +454,27 @@ expression[Block currentBlock]
             currentBlock.ilocs.add(new Iloc("loadi", $i.text, "r" + $reg));
          }
    |  ast=TRUE
+         {
+            $reg = $function::regValues.size();
+            $function::regValues.add("::true");
+            currentBlock.ilocs.add(new Iloc("loadi", "1", "r" + $reg));
+         }
    |  ast=FALSE
+         {
+            $reg = $function::regValues.size();
+            $function::regValues.add("::false");
+            currentBlock.ilocs.add(new Iloc("loadi", "0", "r" + $reg));
+         }
    |  ^(ast=NEW id=ID)
+         {
+
+         }
    |  ast=NULL
+         {
+            $reg = $function::regValues.size();
+            $function::regValues.add("::null");
+            currentBlock.ilocs.add(new Iloc("loadi", "0", "r" + $reg));
+         }
    ;
 
 invocation_exp[Block currentBlock]
