@@ -181,7 +181,12 @@ assignment
          end = $statement::block;
          if ($l.dot)
          {
-            $end.ilocs.add(new Iloc("storeai", "r" + $e.reg, "r" + $l.reg, $l.field_name));
+            if ($l.isGlobal)
+            {
+               $end.ilocs.add(new Iloc("storeglobal", "r" + $e.reg, $l.field_name));
+            }
+            else
+               $end.ilocs.add(new Iloc("storeai", "r" + $e.reg, "r" + $l.reg, $l.field_name));
          }
          else
          {
@@ -301,8 +306,20 @@ invocation_stmt
    ;
 
 lvalue[boolean rec]
-   returns [int reg = -1, boolean dot = false, String field_name = null]
-   :  id=ID {$reg = $function::regValues.indexOf($id.text);}
+   returns [int reg = -1, boolean dot = false, String field_name = null, boolean isGlobal = false]
+   :  id=ID
+         {
+            if (sTable.get($id.text) != null)
+            {
+               $reg = $function::regValues.size();
+               $function::regValues.add("::global");
+               $statement::block.ilocs.add(new Iloc("loadglobal", $id.text, "r" + $reg));
+               $isGlobal = true;
+               $field_name = $id.text;
+            }
+            else
+               $reg = $function::regValues.indexOf($id.text);
+         }
    |  ^(ast=DOT l=lvalue[true] id=ID)
          {
             $dot = true;
@@ -441,7 +458,10 @@ expression[Block currentBlock]
             int oldReg = $function::regValues.indexOf($id.text);
             $reg = $function::regValues.size();
             $function::regValues.add($id.text);
-            currentBlock.ilocs.add(new Iloc("mov", "r" + oldReg, "r" + $reg));
+            if (sTable.get($id.text) != null)
+               currentBlock.ilocs.add(new Iloc("loadglobal", $id.text, "r" + $reg));
+            else
+               currentBlock.ilocs.add(new Iloc("mov", "r" + oldReg, "r" + $reg));
          }
    |  i=INTEGER
          {
