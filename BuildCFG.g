@@ -125,7 +125,7 @@ assignment
    returns [Block end = null;]
    :  ^(ast=ASSIGN e=expression[$statement::block] l=lvalue)
       {
-         $end = $e.end;
+         end = $statement::block;
       }
    ;
 
@@ -133,7 +133,7 @@ print
    returns [Block end = null;]
    :  ^(ast=PRINT e=expression[$statement::block] (ENDL)?)
       {
-         $end = $e.end;
+         end = $statement::block;
       }
    ;
 
@@ -151,8 +151,8 @@ conditional
            Block thenBlock = new Block($function::name + ":then:" + $function::count);
            Block elseBlock = new Block($function::name + ":else:" + $function::count);
            $function::count++; }
-   :  ^(ast=IF g=expression[$statement::block] t=block[thenBlock] {$g.end.connect(thenBlock); thenBlock.connect(end);}
-        (e=block[elseBlock] {$g.end.connect(elseBlock); elseBlock.connect(end);} )?)
+   :  ^(ast=IF g=expression[$statement::block] t=block[thenBlock] {$statement::block.connect(thenBlock); thenBlock.connect(end);}
+        (e=block[elseBlock] {$statement::block.connect(elseBlock); elseBlock.connect(end);} )?)
    ;
 
 loop
@@ -172,20 +172,24 @@ delete
    returns [Block end = null;]
    :  ^(ast=DELETE e=expression[$statement::block])
       {
-         end = $e.end;
+         end = $statement::block;
       }
    ;
 
 return_stmt
    returns [Block end = null;]
-   @init { end = $statement::block; }
-   :  ^(ast=RETURN (e=expression[$statement::block] {end = $e.end;} )?)
+   :  ^(ast=RETURN (e=expression[$statement::block])?)
+      {
+         end = $statement::block;
+      }
    ;
 
 invocation_stmt
    returns [Block end = null;]
-   @init { end = $statement::block; }
    :  ^(ast=INVOKE id=ID ^(ARGS (e=expression[$statement::block] )*))
+      {
+         end = $statement::block;
+      }
    ;
 
 lvalue 
@@ -194,7 +198,6 @@ lvalue
    ;
 
 expression[Block currentBlock] 
-   returns [Block end = currentBlock] // I don't think this would ever not be the case
    :  ^((ast=LT | ast=GT | ast=NE | ast=LE | ast=GE | ast=PLUS
          | ast=MINUS | ast=TIMES | ast=DIVIDE)
          lft=expression[currentBlock] rht=expression[currentBlock])
@@ -213,6 +216,5 @@ expression[Block currentBlock]
    ;
 
 invocation_exp[Block currentBlock]
-   returns [Block end = currentBlock]
    :  ^(ast=INVOKE id=ID ^(ARGS (e=expression[currentBlock] )*))
    ;
