@@ -69,7 +69,7 @@ declarations
    ;
 
 decl_list
-   :  ^(DECLLIST ^(TYPE t=type) (id=ID)+)
+   :  ^(DECLLIST ^(TYPE t=type) (id=ID {sTable.put($id.text, $t.typeName);})+)
    ;
 
 functions
@@ -81,8 +81,10 @@ function
    scope { String name;
            int count;
            Block end;
-           ArrayList<String> regValues;}
-   @init { $function::count = 0; $function::regValues = new ArrayList<String>();}
+           ArrayList<String> regValues;
+           HashMap<String, Type> localHash;}
+   @init { $function::count = 0; $function::regValues = new ArrayList<String>();
+           $function::localHash = new HashMap<String, Table>(sTable);}
    :  ^(ast=FUN id=ID { start = new Block($id.text + ":start");
                         $function::name = $id.text;
                         $function::end = new Block($id.text + ":end"); } p=parameters[start] r=return_type
@@ -101,6 +103,7 @@ fun_decls
 fun_decl_list
    :  ^(DECLLIST ^(TYPE t=type) (id=ID
          {
+            $function::localHash.put($id.text, $t.typeName);
             if (!$function::regValues.add($id.text))
             {
                System.out.println("error :[");
@@ -122,6 +125,7 @@ parameters[Block currentBlock]
 param_decl
    :  ^(DECL ^(TYPE t=type) id=ID)
       {
+         $function::localHash.put($id.text, $t.typeName);
          $function::regValues.add($id.text);
 
          //loadinargument num, 0, r0
