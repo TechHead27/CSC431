@@ -26,6 +26,11 @@ public class StructType extends Type
       return fieldOffsets.indexOf(name);
    }
 
+   public int size()
+   {
+      return fieldOffsets.size();
+   }
+
    public boolean equals(Object o)
    {
       if (o.getClass().equals(NullType.class))
