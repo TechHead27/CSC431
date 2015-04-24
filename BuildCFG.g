@@ -294,13 +294,15 @@ return_stmt
 
 invocation_stmt
    returns [Block end = null;]
-   @init {int arg = 0;}
+   @init {ArrayList<Integer> argRegs = new ArrayList<Integer>();}
    :  ^(ast=INVOKE id=ID ^(ARGS (e=expression[$statement::block]
                                     {
-                                       $statement::block.ilocs.add(new Iloc("storeoutargument", "r" + $e.reg, "" + (arg++)));
+                                       argRegs.add($e.reg);
                                     })*))
       {
-         $statement::block.ilocs.add(new Iloc("call", $id.text, "" + arg));
+         for (int i = 0; i < argRegs.size(); i++)
+            $statement::block.ilocs.add(new Iloc("storeoutargument", "r" + argRegs.get(i), "" + i));
+         $statement::block.ilocs.add(new Iloc("call", $id.text, "" + argRegs.size()));
          end = $statement::block;
       }
    ;
@@ -497,13 +499,15 @@ expression[Block currentBlock]
 
 invocation_exp[Block currentBlock]
    returns[int reg = -1]
-   @init {int arg = 0;}
+   @init {ArrayList<Integer> argRegs = new ArrayList<Integer>();}
    :  ^(ast=INVOKE id=ID ^(ARGS (e=expression[currentBlock]
                                     {
-                                       currentBlock.ilocs.add(new Iloc("storeoutargument", "r" + $e.reg, "" + (arg++)));
+                                       argRegs.add($e.reg);
                                     })*))
          {
-            currentBlock.ilocs.add(new Iloc("call", $id.text, "" + arg));
+            for (int i = 0; i < argRegs.size(); i++)
+               currentBlock.ilocs.add(new Iloc("storeoutargument", "r" + argRegs.get(i), "" + i));
+            currentBlock.ilocs.add(new Iloc("call", $id.text, "" + argRegs.size()));
             $reg = $function::regValues.size();
             $function::regValues.add("::invoc");
             currentBlock.ilocs.add(new Iloc("loadret", "r" + $reg));
