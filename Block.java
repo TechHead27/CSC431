@@ -7,7 +7,7 @@ public class Block
    private ArrayList<Block> succ;
    private String label;
    private boolean visited = false;
-   ArrayList<Iloc> ilocs = new ArrayList<Iloc>();
+   private ArrayList<Iloc> ilocs = new ArrayList<Iloc>();
    private boolean if_fix = false;
 
    public Block()
@@ -103,9 +103,8 @@ public class Block
       return ret;
    }
 
-   public void addIloc(String instruction) {
-      System.out.println(ilocs.size());
-      //ilocs.add(new Iloc());
-      //ilocs.add(new Iloc(instruction));
+   public void addIloc(Iloc instruction)
+   {
+      ilocs.add(instruction);
    }
 }

@@ -86,13 +86,13 @@ function
    @init { $function::count = 0; $function::regValues = new ArrayList<String>();
            $function::localHash = new HashMap<String, Type>(sTable);}
    :  ^(ast=FUN id=ID { start = new Block($id.text + ":start");
-                        start.ilocs.add(new Iloc($id.text + ":"));
+                        start.addIloc(new Iloc($id.text + ":"));
                         $function::name = $id.text;
                         $function::end = new Block($id.text + ":end"); } p=parameters[start] r=return_type
          d=fun_decls s=statement_list[$p.end])
          {
             if (!$s.returns)
-               $function::end.ilocs.add(new Iloc("ret"));
+               $function::end.addIloc(new Iloc("ret"));
             $s.end.connect($function::end);
          }
    ;
@@ -131,7 +131,7 @@ param_decl
 
          //loadinargument num, 0, r0
          int temp = $function::regValues.indexOf($id.text);
-         $parameters::blk.ilocs.add(new Iloc("loadinargument", $id.text, ""+temp, "r"+temp));
+         $parameters::blk.addIloc(new Iloc("loadinargument", $id.text, ""+temp, "r"+temp));
       }
    ;
 
@@ -183,14 +183,14 @@ assignment
          {
             if ($l.isGlobal)
             {
-               $end.ilocs.add(new Iloc("storeglobal", "r" + $e.reg, $l.field_name));
+               $end.addIloc(new Iloc("storeglobal", "r" + $e.reg, $l.field_name));
             }
             else
-               $end.ilocs.add(new Iloc("storeai", "r" + $e.reg, "r" + $l.reg, $l.field_name));
+               $end.addIloc(new Iloc("storeai", "r" + $e.reg, "r" + $l.reg, $l.field_name));
          }
          else
          {
-            $end.ilocs.add(new Iloc("mov", "r" + $e.reg, "r" + $l.reg));
+            $end.addIloc(new Iloc("mov", "r" + $e.reg, "r" + $l.reg));
          }
       }
    ;
@@ -200,7 +200,7 @@ print
    :  ^(ast=PRINT e=expression[$statement::block] (ENDL)?)
       {
          end = $statement::block;
-         $end.ilocs.add(new Iloc("print", "r" + $e.reg));
+         $end.addIloc(new Iloc("print", "r" + $e.reg));
       }
    ;
 
@@ -211,9 +211,9 @@ read
          end = $statement::block;
          int reg = $function::regValues.size();
          $function::regValues.add("::read");
-         end.ilocs.add(new Iloc("addi", "rarp", $function::regValues.get($l.reg), "r" + reg));
-         end.ilocs.add(new Iloc("read", "r" + reg));
-         end.ilocs.add(new Iloc("loadai", "rarp", $function::regValues.get($l.reg), "r" + $l.reg));
+         end.addIloc(new Iloc("addi", "rarp", $function::regValues.get($l.reg), "r" + reg));
+         end.addIloc(new Iloc("read", "r" + reg));
+         end.addIloc(new Iloc("loadai", "rarp", $function::regValues.get($l.reg), "r" + $l.reg));
       }
    ;
 
@@ -232,14 +232,14 @@ conditional
                   {
                      int reg = $function::regValues.size();
                      $function::regValues.add("::cond");
-                     $statement::block.ilocs.add(new Iloc("loadi", "1", "r" + reg));
-                     $statement::block.ilocs.add(new Iloc("comp", "r" + $g.reg, "r" + reg, "ccr"));
-                     $statement::block.ilocs.add(new Iloc("cbreq", "ccr", "L" + then_cond, "L" + else_cond));
-                     thenBlock.ilocs.add(new Iloc("L" + then_cond + ":"));
-                     elseBlock.ilocs.add(new Iloc("L" + else_cond + ":"));
-                     end.ilocs.add(new Iloc("L" + finally_cond + ":"));
+                     $statement::block.addIloc(new Iloc("loadi", "1", "r" + reg));
+                     $statement::block.addIloc(new Iloc("comp", "r" + $g.reg, "r" + reg, "ccr"));
+                     $statement::block.addIloc(new Iloc("cbreq", "ccr", "L" + then_cond, "L" + else_cond));
+                     thenBlock.addIloc(new Iloc("L" + then_cond + ":"));
+                     elseBlock.addIloc(new Iloc("L" + else_cond + ":"));
+                     end.addIloc(new Iloc("L" + finally_cond + ":"));
                   }
-              t=block[thenBlock] {thenBlock.ilocs.add(new Iloc("jumpi", "L" + finally_cond)); $statement::block.connect(end); end.connect(thenBlock); end.connect(elseBlock);}
+              t=block[thenBlock] {thenBlock.addIloc(new Iloc("jumpi", "L" + finally_cond)); $statement::block.connect(end); end.connect(thenBlock); end.connect(elseBlock);}
               (e=block[elseBlock])?)
    ;
 
@@ -258,16 +258,16 @@ loop
                   int out = ++lastLabel;
                } e=expression[expBlock]
                   {
-                     expBlock.ilocs.add(new Iloc("brz", "r" + $e.reg, "L" + out, "L" + in));
-                     expBlock.ilocs.add(new Iloc("L" + in + ":"));
+                     expBlock.addIloc(new Iloc("brz", "r" + $e.reg, "L" + out, "L" + in));
+                     expBlock.addIloc(new Iloc("L" + in + ":"));
                   } b=block[bodyBlock] ex=expression[$b.end]
                      {
-                        $b.end.ilocs.add(new Iloc("brz", "r" + $ex.reg, "L" + out, "L" + in));
+                        $b.end.addIloc(new Iloc("brz", "r" + $ex.reg, "L" + out, "L" + in));
                         expBlock.connect(bodyBlock);
                         expBlock.connect(end);
                         bodyBlock.connect($b.end);
                         $b.end.connect(expBlock);
-                        end.ilocs.add(new Iloc("L" + out + ":"));
+                        end.addIloc(new Iloc("L" + out + ":"));
                      })
    ;
 
@@ -285,8 +285,8 @@ return_stmt
       {
          $statement::block.connect($function::end);
          if ($e.reg != -1)
-            $statement::block.ilocs.add(new Iloc("storeret", "r" + $e.reg));
-         $statement::block.ilocs.add(new Iloc("ret"));
+            $statement::block.addIloc(new Iloc("storeret", "r" + $e.reg));
+         $statement::block.addIloc(new Iloc("ret"));
          end = new Block($function::name + ":afterreturn:" + $function::count);
          $function::count++;
       }
@@ -301,8 +301,8 @@ invocation_stmt
                                     })*))
       {
          for (int i = 0; i < argRegs.size(); i++)
-            $statement::block.ilocs.add(new Iloc("storeoutargument", "r" + argRegs.get(i), "" + i));
-         $statement::block.ilocs.add(new Iloc("call", $id.text, "" + argRegs.size()));
+            $statement::block.addIloc(new Iloc("storeoutargument", "r" + argRegs.get(i), "" + i));
+         $statement::block.addIloc(new Iloc("call", $id.text, "" + argRegs.size()));
          end = $statement::block;
       }
    ;
@@ -315,7 +315,7 @@ lvalue[boolean rec]
             {
                $reg = $function::regValues.size();
                $function::regValues.add("::global");
-               $statement::block.ilocs.add(new Iloc("loadglobal", $id.text, "r" + $reg));
+               $statement::block.addIloc(new Iloc("loadglobal", $id.text, "r" + $reg));
                $isGlobal = true;
                $field_name = $id.text;
             }
@@ -331,17 +331,17 @@ lvalue[boolean rec]
             {
                int temp = $function::regValues.size();
                $function::regValues.add("::temp");
-               $statement::block.ilocs.add(new Iloc("mov", "r" + $l.reg, "r" + temp));
+               $statement::block.addIloc(new Iloc("mov", "r" + $l.reg, "r" + temp));
                $reg = $function::regValues.size();
                $function::regValues.add("::struct");
-               $statement::block.ilocs.add(new Iloc("loadai", "r" + temp, $id.text, "r" + $reg));
+               $statement::block.addIloc(new Iloc("loadai", "r" + temp, $id.text, "r" + $reg));
 
             }
             else
             {  
                $reg = $function::regValues.size();
                $function::regValues.add("::struct");
-               $statement::block.ilocs.add(new Iloc("mov", "r" + $l.reg, "r" + $reg));
+               $statement::block.addIloc(new Iloc("mov", "r" + $l.reg, "r" + $reg));
 
             }
          }
@@ -353,106 +353,106 @@ expression[Block currentBlock]
          {
             $reg = $function::regValues.size();
             $function::regValues.add("::0");
-            currentBlock.ilocs.add(new Iloc("loadi", "0", "r" + $reg));
-            currentBlock.ilocs.add(new Iloc("comp", "r" + $lft.reg, "r" + $rht.reg, "ccr"));
-            currentBlock.ilocs.add(new Iloc("movlti", "ccr", "1", "r" + $reg));
+            currentBlock.addIloc(new Iloc("loadi", "0", "r" + $reg));
+            currentBlock.addIloc(new Iloc("comp", "r" + $lft.reg, "r" + $rht.reg, "ccr"));
+            currentBlock.addIloc(new Iloc("movlti", "ccr", "1", "r" + $reg));
          }
    |  ^(ast=GT lft=expression[currentBlock] rht=expression[currentBlock])
          {
             $reg = $function::regValues.size();
             $function::regValues.add("::0");
-            currentBlock.ilocs.add(new Iloc("loadi", "0", "r" + $reg));
-            currentBlock.ilocs.add(new Iloc("comp", "r" + $lft.reg, "r" + $rht.reg, "ccr"));
-            currentBlock.ilocs.add(new Iloc("movgti", "ccr", "1", "r" + $reg));
+            currentBlock.addIloc(new Iloc("loadi", "0", "r" + $reg));
+            currentBlock.addIloc(new Iloc("comp", "r" + $lft.reg, "r" + $rht.reg, "ccr"));
+            currentBlock.addIloc(new Iloc("movgti", "ccr", "1", "r" + $reg));
          }
    |  ^(ast=NE lft=expression[currentBlock] rht=expression[currentBlock])
          {
             $reg = $function::regValues.size();
             $function::regValues.add("::0");
-            currentBlock.ilocs.add(new Iloc("loadi", "0", "r" + $reg));
-            currentBlock.ilocs.add(new Iloc("comp", "r" + $lft.reg, "r" + $rht.reg, "ccr"));
-            currentBlock.ilocs.add(new Iloc("movnei", "ccr", "1", "r" + $reg));
+            currentBlock.addIloc(new Iloc("loadi", "0", "r" + $reg));
+            currentBlock.addIloc(new Iloc("comp", "r" + $lft.reg, "r" + $rht.reg, "ccr"));
+            currentBlock.addIloc(new Iloc("movnei", "ccr", "1", "r" + $reg));
          }
    |  ^(ast=LE lft=expression[currentBlock] rht=expression[currentBlock])
          {
             $reg = $function::regValues.size();
             $function::regValues.add("::0");
-            currentBlock.ilocs.add(new Iloc("loadi", "0", "r" + $reg));
-            currentBlock.ilocs.add(new Iloc("comp", "r" + $lft.reg, "r" + $rht.reg, "ccr"));
-            currentBlock.ilocs.add(new Iloc("movlei", "ccr", "1", "r" + $reg));
+            currentBlock.addIloc(new Iloc("loadi", "0", "r" + $reg));
+            currentBlock.addIloc(new Iloc("comp", "r" + $lft.reg, "r" + $rht.reg, "ccr"));
+            currentBlock.addIloc(new Iloc("movlei", "ccr", "1", "r" + $reg));
          }
    |  ^(ast=GE lft=expression[currentBlock] rht=expression[currentBlock])
          {
             $reg = $function::regValues.size();
             $function::regValues.add("::0");
-            currentBlock.ilocs.add(new Iloc("loadi", "0", "r" + $reg));
-            currentBlock.ilocs.add(new Iloc("comp", "r" + $lft.reg, "r" + $rht.reg, "ccr"));
-            currentBlock.ilocs.add(new Iloc("movgei", "ccr", "1", "r" + $reg));
+            currentBlock.addIloc(new Iloc("loadi", "0", "r" + $reg));
+            currentBlock.addIloc(new Iloc("comp", "r" + $lft.reg, "r" + $rht.reg, "ccr"));
+            currentBlock.addIloc(new Iloc("movgei", "ccr", "1", "r" + $reg));
          }
    |  ^(ast=PLUS lft=expression[currentBlock] rht=expression[currentBlock])
          {
             $reg = $function::regValues.size();
             $function::regValues.add("::plus");
-            currentBlock.ilocs.add(new Iloc("add", "r" + $lft.reg, "r" + $rht.reg, "r" + $reg));
+            currentBlock.addIloc(new Iloc("add", "r" + $lft.reg, "r" + $rht.reg, "r" + $reg));
          }
    |  ^(ast=MINUS lft=expression[currentBlock] rht=expression[currentBlock])
          {
             $reg = $function::regValues.size();
             $function::regValues.add("::sub");
-            currentBlock.ilocs.add(new Iloc("sub", "r" + $lft.reg, "r" + $rht.reg, "r" + $reg));
+            currentBlock.addIloc(new Iloc("sub", "r" + $lft.reg, "r" + $rht.reg, "r" + $reg));
          }
    |  ^(ast=TIMES lft=expression[currentBlock] rht=expression[currentBlock])
          {
             $reg = $function::regValues.size();
             $function::regValues.add("::mult");
-            currentBlock.ilocs.add(new Iloc("mult", "r" + $lft.reg, "r" + $rht.reg, "r" + $reg));
+            currentBlock.addIloc(new Iloc("mult", "r" + $lft.reg, "r" + $rht.reg, "r" + $reg));
          }
    |  ^(ast=DIVIDE lft=expression[currentBlock] rht=expression[currentBlock])
          {
             $reg = $function::regValues.size();
             $function::regValues.add("::div");
-            currentBlock.ilocs.add(new Iloc("div", "r" + $lft.reg, "r" + $rht.reg, "r" + $reg));
+            currentBlock.addIloc(new Iloc("div", "r" + $lft.reg, "r" + $rht.reg, "r" + $reg));
          }
    |  ^(ast=EQ lft=expression[currentBlock] rht=expression[currentBlock])
          {
             $reg = $function::regValues.size();
             $function::regValues.add("::eq");
-            currentBlock.ilocs.add(new Iloc("loadi", "0", "r" + $reg));
-            currentBlock.ilocs.add(new Iloc("comp", "r" + $lft.reg, "r" + $rht.reg, "ccr"));
-            currentBlock.ilocs.add(new Iloc("moveqi", "ccr", "1", "r" + $reg));
+            currentBlock.addIloc(new Iloc("loadi", "0", "r" + $reg));
+            currentBlock.addIloc(new Iloc("comp", "r" + $lft.reg, "r" + $rht.reg, "ccr"));
+            currentBlock.addIloc(new Iloc("moveqi", "ccr", "1", "r" + $reg));
          }
    |  ^(ast=AND lft=expression[currentBlock] rht=expression[currentBlock])
          {
             $reg = $function::regValues.size();
             $function::regValues.add("::and");
-            currentBlock.ilocs.add(new Iloc("and", "r" + $lft.reg, "r" + $rht.reg, "r" + $reg));
+            currentBlock.addIloc(new Iloc("and", "r" + $lft.reg, "r" + $rht.reg, "r" + $reg));
          }
    |  ^(ast=OR lft=expression[currentBlock] rht=expression[currentBlock])
          {
             $reg = $function::regValues.size();
             $function::regValues.add("::or");
-            currentBlock.ilocs.add(new Iloc("or", "r" + $lft.reg, "r" + $rht.reg, "r" + $reg));
+            currentBlock.addIloc(new Iloc("or", "r" + $lft.reg, "r" + $rht.reg, "r" + $reg));
          }
    |  ^(ast=NOT e=expression[currentBlock])
          {
             $reg = $function::regValues.size();
             $function::regValues.add("::not");
-            currentBlock.ilocs.add(new Iloc("xori", "r" + $e.reg, "1","r" + $reg));
+            currentBlock.addIloc(new Iloc("xori", "r" + $e.reg, "1","r" + $reg));
          }
    |  ^(ast=NEG e=expression[currentBlock])
          {
             int immed = $function::regValues.size();
             $function::regValues.add("::-1");
-            currentBlock.ilocs.add(new Iloc("loadi", "-1", "r" + immed));
+            currentBlock.addIloc(new Iloc("loadi", "-1", "r" + immed));
             $reg = $function::regValues.size();
             $function::regValues.add("::mult");
-            currentBlock.ilocs.add(new Iloc("mult", "r" + $e.reg, "r" + immed, "r" + $reg));
+            currentBlock.addIloc(new Iloc("mult", "r" + $e.reg, "r" + immed, "r" + $reg));
          }
    |  ^(ast=DOT e=expression[currentBlock] id=ID)
          {
             $reg = $function::regValues.size();
             $function::regValues.add($id.text);
-            currentBlock.ilocs.add(new Iloc("loadai", "r" + $e.reg, $id.text, "r" + $reg));
+            currentBlock.addIloc(new Iloc("loadai", "r" + $e.reg, $id.text, "r" + $reg));
          }
    |  ie=invocation_exp[currentBlock] {$reg = $ie.reg;}
    |  id=ID
@@ -461,39 +461,39 @@ expression[Block currentBlock]
             $reg = $function::regValues.size();
             $function::regValues.add($id.text);
             if (sTable.get($id.text) != null)
-               currentBlock.ilocs.add(new Iloc("loadglobal", $id.text, "r" + $reg));
+               currentBlock.addIloc(new Iloc("loadglobal", $id.text, "r" + $reg));
             else
-               currentBlock.ilocs.add(new Iloc("mov", "r" + oldReg, "r" + $reg));
+               currentBlock.addIloc(new Iloc("mov", "r" + oldReg, "r" + $reg));
          }
    |  i=INTEGER
          {
             $reg = $function::regValues.size();
             $function::regValues.add($i.text);
-            currentBlock.ilocs.add(new Iloc("loadi", $i.text, "r" + $reg));
+            currentBlock.addIloc(new Iloc("loadi", $i.text, "r" + $reg));
          }
    |  ast=TRUE
          {
             $reg = $function::regValues.size();
             $function::regValues.add("::true");
-            currentBlock.ilocs.add(new Iloc("loadi", "1", "r" + $reg));
+            currentBlock.addIloc(new Iloc("loadi", "1", "r" + $reg));
          }
    |  ast=FALSE
          {
             $reg = $function::regValues.size();
             $function::regValues.add("::false");
-            currentBlock.ilocs.add(new Iloc("loadi", "0", "r" + $reg));
+            currentBlock.addIloc(new Iloc("loadi", "0", "r" + $reg));
          }
    |  ^(ast=NEW id=ID)
          {
             $reg = $function::regValues.size();
             $function::regValues.add("::new");
-            currentBlock.ilocs.add(new Iloc("new", ""+((StructType)structs.get($id.text)).size(), "r" + $reg));
+            currentBlock.addIloc(new Iloc("new", ""+((StructType)structs.get($id.text)).size(), "r" + $reg));
          }
    |  ast=NULL
          {
             $reg = $function::regValues.size();
             $function::regValues.add("::null");
-            currentBlock.ilocs.add(new Iloc("loadi", "0", "r" + $reg));
+            currentBlock.addIloc(new Iloc("loadi", "0", "r" + $reg));
          }
    ;
 
@@ -506,10 +506,10 @@ invocation_exp[Block currentBlock]
                                     })*))
          {
             for (int i = 0; i < argRegs.size(); i++)
-               currentBlock.ilocs.add(new Iloc("storeoutargument", "r" + argRegs.get(i), "" + i));
-            currentBlock.ilocs.add(new Iloc("call", $id.text, "" + argRegs.size()));
+               currentBlock.addIloc(new Iloc("storeoutargument", "r" + argRegs.get(i), "" + i));
+            currentBlock.addIloc(new Iloc("call", $id.text, "" + argRegs.size()));
             $reg = $function::regValues.size();
             $function::regValues.add("::invoc");
-            currentBlock.ilocs.add(new Iloc("loadret", "r" + $reg));
+            currentBlock.addIloc(new Iloc("loadret", "r" + $reg));
          }
    ;
