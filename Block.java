@@ -78,18 +78,14 @@ public class Block
                current.if_fix = true;
                current.visited = false;
                toVisit.push(current);
-               System.err.println("Pushing " + current.succ.get(1).label);
                toVisit.push(current.succ.get(1));
-               System.err.println("Pushing " + current.succ.get(0).label);
                toVisit.push(current.succ.get(0));
             }
             else
             {
                if (parts[1].equals("whiletest"))
                {
-                  System.err.println("Pushing " + current.succ.get(1).label);
                   toVisit.push(current.succ.get(1));
-                  System.err.println("Pushing " + current.succ.get(0).label);
                   toVisit.push(current.succ.get(0));
                }
                else
