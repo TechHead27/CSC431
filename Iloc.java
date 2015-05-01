@@ -50,6 +50,19 @@ public class Iloc
 		args[numArgs++] = arg;
 	}
 
+   public String getInst()
+   {
+      return instruction;
+   }
+
+   public String getReg(int i)
+   {
+      if (i < numArgs)
+         return ars[i];
+      else
+         return null;
+   }
+
 	//access would be iloc.args[0,1,2]
 
 }
