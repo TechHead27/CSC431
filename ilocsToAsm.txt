@@ -1,0 +1,110 @@
+0 arg ILOC:
+	ret
+		ret
+	label:
+		label:
+
+1 arg ILOC:
+	storeret r1
+		mov r1, %RAX
+	print r1
+		mov print, %rdi
+		mov r1, %rsi
+		call printf
+		mov $0, %rax
+	read r1
+		mov read, %rdi
+		mov r1, %rsi
+		call scanf
+		mov $0, %rax
+	jumpi L1
+		jmp L1
+	neg r1
+		neg r1
+
+2 arg ILOC:
+	mov r1, r2
+		mov r1, r2
+	*storeglobal r1, field_name
+	loadi i1, r1
+		mov $i1, r1
+	*storeoutargument r1, i1
+	call func, argSize
+		call func
+	*loadglobal name, $r1
+	new il, r1
+		#; presets the stack, store it in some reference for what belongs to what
+
+3 arg ILOC -> 2 arg asm
+	add r1, r2, r3
+		movq r1, r3
+		addq r2, r3
+	addi r1, i1, r3
+		movq r1 r3
+		add $i1, r3
+	sub r1, r2, r3
+		movq r1, r3
+		subq r2, r3
+	mult r1, r2, r3
+		movq r1, r3
+		imulq r2, r3
+	div r1, r2, r3
+		movq r1, %RAX
+		movq %RAX, %RDX
+		sarq $63, %RDX
+		idivq r2
+		mov %RAX, r3
+	loadinargument "test", 1, r1
+		mov a1, r1			// needs to be more complex when dealing with 7+ args without virtual registers
+	*storeai r1, r2, field_name
+	*loadai r1, i1, r2
+	comp r1, r2, ccr
+		cmp r1, r2
+	cbreq ccr, L1, L2
+		je L1
+		jne L2
+	movlti ccr, 1, r1
+		push %RDI
+		mov $1, %RDI
+		cmovl 1, r1
+		pop %RDI
+	brz r1, L1, L2
+		cmp $0, r1
+		je L1
+		jne L2
+	movgti ccr, 1, r1
+		push %RDI
+		mov $1, %RDI
+		cmovg 1, r1
+		pop %RDI
+	movnei ccr, 1, r1
+		push %RDI
+		mov $1, %RDI
+		cmovne 1, r1
+		pop %RDI
+	movlei ccr, 1, r1
+		push %RDI
+		mov $1, %RDI
+		cmovle 1, r1
+		pop %RDI
+	movgei ccr, 1, r1
+		push %RDI
+		mov $1, %RDI
+		cmovge 1, r1
+		pop %RDI
+	moveqi ccr, 1, r1
+		push %RDI
+		mov $1, %RDI
+		cmove 1, r1
+		pop %RDI
+	xori r1, 1, r1
+		xorq $1, r1
+	and r1, r2, r3
+		mov r1, r3
+		and r2, r3
+	or r1, r2, r3
+		mov r1, r3
+		or r2, r3
+
+Create assembly class that stores all ILOC in one arraylist. keep track of  
+generate code from mixed.mini
