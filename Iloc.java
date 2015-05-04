@@ -58,7 +58,7 @@ public class Iloc
    public String getReg(int i)
    {
       if (i < numArgs)
-         return ars[i];
+         return args[i];
       else
          return null;
    }

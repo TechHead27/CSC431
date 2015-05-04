@@ -32,11 +32,13 @@ public class Compile
             ArrayList<Block> functionBlocks = translate(tree, tokens);
             System.out.println("No type errors.");
             if (_dumpIL)
-               System.err.println(functionBlocks.size());
+            {
                for (Block b : functionBlocks)
                {
                   System.out.println(b.getGraph());
                }
+            }
+            System.out.println(converter.Convert(functionBlocks));
          }
          catch (SyntaxException e)
          {

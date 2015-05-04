@@ -107,4 +107,9 @@ public class Block
    {
       ilocs.add(instruction);
    }
+
+   public ArrayList<Iloc> getIlocs()
+   {
+      return (ArrayList<Iloc>)ilocs.clone();
+   }
 }
