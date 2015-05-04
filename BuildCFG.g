@@ -276,6 +276,10 @@ delete
    :  ^(ast=DELETE e=expression[$statement::block])
       {
          end = $statement::block;
+         int reg = $function::regValues.size();
+         $function::regValues.add("::delete");
+         end.addIloc(new Iloc("mov", "r" + e.reg, "r" + reg))
+         end.addIloc(new Iloc("del", "r" + reg));
       }
    ;
 
