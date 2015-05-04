@@ -18,6 +18,7 @@ public class Compile
       CommonTokenStream tokens = new CommonTokenStream(createLexer());
       MiniParser parser = new MiniParser(tokens);
       CommonTree tree = parse(parser);
+      IlocToAsm converter = new IlocToAsm();
 
       if (_displayAST && tree != null)
       {
@@ -30,7 +31,7 @@ public class Compile
          try
          {
             ArrayList<Block> functionBlocks = translate(tree, tokens);
-            System.out.println("No type errors.");
+            System.err.println("No type errors.");
             if (_dumpIL)
             {
                for (Block b : functionBlocks)

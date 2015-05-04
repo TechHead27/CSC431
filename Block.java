@@ -110,6 +110,44 @@ public class Block
 
    public ArrayList<Iloc> getIlocs()
    {
-      return (ArrayList<Iloc>)ilocs.clone();
+      ArrayList<Iloc> ret = new ArrayList<Iloc>();
+      LinkedList<Block> toVisit = new LinkedList<Block>();
+      toVisit.offer(this);
+
+      while (!toVisit.isEmpty())
+      {
+         Block current = toVisit.poll();
+         if (!(current.visited))
+         {
+            current.visited = true;
+            String[] parts = current.label.split(":");
+            System.err.println(current.label + " " + parts.length);
+            if (parts[1].equals("ifend") && !current.if_fix)
+            {
+               current.if_fix = true;
+               current.visited = false;
+               toVisit.push(current);
+               toVisit.push(current.succ.get(1));
+               toVisit.push(current.succ.get(0));
+            }
+            else
+            {
+               if (parts[1].equals("whiletest"))
+               {
+                  toVisit.push(current.succ.get(1));
+                  toVisit.push(current.succ.get(0));
+               }
+               else
+               {
+                  for (Block b : current.succ)
+                  {
+                     toVisit.offer(b);
+                  }
+               }
+               ret.addAll(current.ilocs);
+            }
+         }
+      }
+      return ret;
    }
 }
