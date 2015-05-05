@@ -91,6 +91,8 @@ public class IlocToAsm
             return ret;
          case "call":
             return "call " + input.getReg(0);
+         case "loadret":
+            return "movq %rax, " + input.getReg(0);
          case "loadglobal":
             return "movq " + input.getReg(0) + "(%rip) " + input.getReg(1);
          case "new":
