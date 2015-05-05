@@ -33,7 +33,7 @@ public class IlocToAsm
             return ret;
          case "read":
             ret = "movq scan, " + "%rdi\n";
-            ret += "lea scanVar, %rsi";
+            ret += "lea scanVar, %rsi\n";
             ret += "call scanf\n";
             ret += "movq scanVar, " + input.getReg(0);
             return ret;
