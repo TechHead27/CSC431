@@ -98,6 +98,10 @@ public class IlocToAsm
             ret += "call malloc\n";
             ret += "movq %rax, " + input.getReg(1);
             return ret;
+         case "del":
+            ret = "movq " + input.getReg(0) + ", " + "%rdi\n";
+            ret += "call free";
+            return ret;
          case "sub":
             ret = "movq " + input.getReg(0) + ", " + input.getReg(2);
             ret += "\nsubq " + input.getReg(1) + ", " + input.getReg(2);
