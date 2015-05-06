@@ -309,19 +309,23 @@ invocation_stmt
    ;
 
 lvalue[boolean rec]
-   returns [int reg = -1, boolean dot = false, String field_name = null, boolean isGlobal = false]
+   returns [int reg = -1, boolean dot = false, String field_name = null, boolean isGlobal = false, Type typeName = null]
    :  id=ID
          {
-            if (sTable.get($id.text) != null)
+            if ($function::localHash.get($id.text) != null)
+            {
+               $reg = $function::regValues.indexOf($id.text);
+               $typeName = $function::localHash.get($id.text);
+            }
+            else if (sTable.get($id.text) != null)
             {
                $reg = $function::regValues.size();
                $function::regValues.add("::global");
                $statement::block.addIloc(new Iloc("loadglobal", $id.text, "r" + $reg));
                $isGlobal = true;
                $field_name = $id.text;
+               $typeName = sTable.get($id.text);
             }
-            else
-               $reg = $function::regValues.indexOf($id.text);
          }
    |  ^(ast=DOT l=lvalue[true] id=ID)
          {
@@ -330,20 +334,15 @@ lvalue[boolean rec]
             
             if (rec)
             {
-               int temp = $function::regValues.size();
-               $function::regValues.add("::temp");
-               $statement::block.addIloc(new Iloc("mov", "r" + $l.reg, "r" + temp));
                $reg = $function::regValues.size();
                $function::regValues.add("::struct");
-               $statement::block.addIloc(new Iloc("loadai", "r" + temp, $id.text, "r" + $reg));
-
+               $statement::block.addIloc(new Iloc("loadai", "r" + $l.reg, ""+((StructType)$l.typeName).getFieldOffset($field_name), "r" + $reg));
+               $typeName = $l.typeName;
             }
             else
             {  
-               $reg = $function::regValues.size();
-               $function::regValues.add("::struct");
-               $statement::block.addIloc(new Iloc("mov", "r" + $l.reg, "r" + $reg));
-
+               $reg = $l.reg;
+               $typeName = $l.typeName;
             }
          }
    ;
