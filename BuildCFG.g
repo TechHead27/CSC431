@@ -209,11 +209,8 @@ read
    :  ^(ast=READ l=lvalue[false])
       {
          end = $statement::block;
-         int reg = $function::regValues.size();
          $function::regValues.add("::read");
-         end.addIloc(new Iloc("addi", "rarp", $function::regValues.get($l.reg), "r" + reg));
-         end.addIloc(new Iloc("read", "r" + reg));
-         end.addIloc(new Iloc("loadai", "rarp", $function::regValues.get($l.reg), "r" + $l.reg));
+         end.addIloc(new Iloc("read", "r" + $l.reg));
       }
    ;
 
