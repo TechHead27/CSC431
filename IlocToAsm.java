@@ -27,7 +27,7 @@ public class IlocToAsm
             return "movq " + input.getReg(0) + ", %rax";
          case "print":
             ret = "movq print, " + "%rdi\n";
-            ret += "movq " + input.getReg(0) + "%rsi\n";
+            ret += "movq " + input.getReg(0) + ", %rsi\n";
             ret += "call printf\n";
             ret += "movq $0, $rax";
             return ret;

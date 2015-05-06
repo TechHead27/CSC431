@@ -23,7 +23,7 @@ public class StructType extends Type
 
    public int getFieldOffset(String name)
    {
-      return fieldOffsets.indexOf(name);
+      return 8*fieldOffsets.indexOf(name);
    }
 
    public int size()
