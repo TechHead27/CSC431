@@ -94,7 +94,7 @@ public class IlocToAsm
          case "loadret":
             return "movq %rax, " + input.getReg(0);
          case "loadglobal":
-            return "movq " + input.getReg(0) + "(%rip) " + input.getReg(1);
+            return "movq " + input.getReg(0) + "(%rip), " + input.getReg(1);
          case "new":
             ret = "movq " + input.getReg(0) + ", " + "%rdi\n";
             ret += "call malloc\n";
