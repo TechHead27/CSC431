@@ -16,197 +16,213 @@ public class IlocToAsm
       header.addIloc(new Iloc(".comm scanVar,8,8"));
    }
 
-   private String ConvertInst(Iloc input)
+   private ArrayList<Instruction> ConvertInst(Iloc input)
    {
-      String ret;
+      ArrayList<Instruction> ret = new ArrayList<Instruction>();
       switch (input.getInst())
       {
          case "ret":
-            return "ret";
+            ret.add(new Instruction("ret"));
+            break;
          case "storeret":
-            return "movq " + input.getReg(0) + ", %rax";
+            ret.add(new Instruction("movq", input.getReg(0) + "%rax"));
+            break;
          case "print":
-            ret = "movq print, " + "%rdi\n";
-            ret += "movq " + input.getReg(0) + ", %rsi\n";
-            ret += "call printf\n";
-            ret += "movq $0, $rax";
-            return ret;
+            ret.add(new Instruction("movq", "print", "%rdi"));
+            ret.add(new Instruction("movq", input.getReg(0) + "%rsi"));
+            ret.add(new Instruction("call", "printf"));
+            ret.add(new Instruction("movq", "$0", "%rax"));
+            break;
          case "read":
-            ret = "movq scan, " + "%rdi\n";
-            ret += "lea scanVar, %rsi\n";
-            ret += "call scanf\n";
-            ret += "movq scanVar, " + input.getReg(0);
-            return ret;
+            ret.add(new Instruction("movq", "scan", "%rdi"));
+            ret.add(new Instruction("lea", "scanVar", "%rsi"));
+            ret.add(new Instruction("call", "scanf"));
+            ret.add(new Instruction("movq", "scanVar", input.getReg(0)));
+            break;
          case "jumpi":
-            return "jmp " + input.getReg(0);
+            ret.add(new Instruction("jmp", input.getReg(0)));
+            break;
          case "neg":
-            return "neg " + input.getReg(0);
+            ret.add(new Instruction("neg", input.getReg(0)));
+            break;
          case "add":
-            ret = "movq " + input.getReg(0) + ", " + input.getReg(2);
-            ret += "\naddq " + input.getReg(1) + ", " + input.getReg(2);
-            return ret;
+            ret.add(new Instruction("movq", input.getReg(0), input.getReg(2)));
+            break;
          case "addi":
-            ret = "movq " + input.getReg(0) + ", " + input.getReg(2);
-            ret += "\naddq $" + input.getReg(1) + ", " + input.getReg(2);
-            return ret;
+            ret.add(new Instruction("movq", input.getReg(0), input.getReg(2)));
+            ret.add(new Instruction("addq", "$" + input.getReg(1), input.getReg(2)));
+            break;
          case "mov":
-            return "movq " + input.getReg(0) + ", " + input.getReg(1);
+            ret.add(new Instruction("movq", input.getReg(0), input.getReg(1)));
+            break;
          case "storeai":
             // need to replace field name with offset
-            return "movq " + input.getReg(0) + ", " + input.getReg(2) + "(" + input.getReg(1) + ")";
+            ret.add(new Instruction("movq", input.getReg(0), input.getReg(2) + "(" + input.getReg(1) + ")"));
+            break;
          case "storeglobal":
             if (!globals.contains(input.getReg(1)))
             {
                header.addIloc(new Iloc(".comm " + input.getReg(1) + ",8,8"));
                globals.add(input.getReg(1));
             }
-            return "movq " + input.getReg(0) + ", " + input.getReg(1) + "(%rip)";
+            ret.add(new Instruction("movq", input.getReg(0), input.getReg(1) + "(%rip)"));
+            break;
          case "loadi":
-            return "movq $" + input.getReg(0) + ", " + input.getReg(1);
+            ret.add(new Instruction("movq", "$" + input.getReg(0), input.getReg(1)));
+            break;
          case "storeoutargument":
-            ret = "movq " + input.getReg(0) + ", ";
             switch (Integer.parseInt(input.getReg(1)))
             {
                case 0:
-                  ret += "%rdi";
+                  ret.add(new Instruction("movq", input.getReg(0), "%rdi"));
                   break;
                case 1:
-                  ret += "%rsi";
+                  ret.add(new Instruction("movq", input.getReg(0), "%rsi"));
                   break;
                case 2:
-                  ret += "%rdx";
+                  ret.add(new Instruction("movq", input.getReg(0), "%rdx"));
                   break;
                case 3:
-                  ret += "%rcx";
+                  ret.add(new Instruction("movq", input.getReg(0), "%rcx"));
                   break;
                case 4:
-                  ret += "%r8";
+                  ret.add(new Instruction("movq", input.getReg(0), "%r8));
                   break;
                case 5:
-                  ret += "%r9";
+                  ret.add(new Instruction("movq", input.getReg(0), "%r9"));
                   break;
                default:
-                  ret += "stack";
+                  ret.add(new Instruction("movq", input.getReg(0), "stack"));
             }
-            return ret;
+            break;
          case "call":
-            return "call " + input.getReg(0);
+            ret.add(new Instruction("call", input.getReg(0)));
+            break;
          case "loadret":
-            return "movq %rax, " + input.getReg(0);
+            ret.add(new Instruction("movq", "%rax", input.getReg(0)));
+            break;
          case "loadglobal":
-            return "movq " + input.getReg(0) + "(%rip), " + input.getReg(1);
+            ret.add(new Instruction("movq", input.getReg(0) + "(%rip)", + input.getReg(1)));
+            break;
          case "new":
-            ret = "movq " + input.getReg(0) + ", " + "%rdi\n";
-            ret += "call malloc\n";
-            ret += "movq %rax, " + input.getReg(1);
-            return ret;
+            ret.add(new Instruction("movq", input.getReg(0), "%rdi"));
+            ret.add(new Instruction("call", "malloc"));
+            ret.add(new Instuction("movq", "%rax", input.getReg(1)));
+            break;
          case "del":
-            ret = "movq " + input.getReg(0) + ", " + "%rdi\n";
-            ret += "call free";
-            return ret;
+            ret.add(new Instruction("movq", input.getReg(0), "%rdi"));
+            ret.add(new Instruction("call", "free"));
+            break;
          case "sub":
-            ret = "movq " + input.getReg(0) + ", " + input.getReg(2);
-            ret += "\nsubq " + input.getReg(1) + ", " + input.getReg(2);
-            return ret;
+            ret.add(new Instruction("movq", input.getReg(0), input.getReg(2)));
+            ret.add(new Instruction("subq", input.getReg(1), input.getReg(2)));
+            break;
          case "mult":
-            ret = "movq " + input.getReg(0) + ", " + input.getReg(2);
-            ret += "\nimulq " + input.getReg(1) + ", " + input.getReg(2);
-            return ret;
+            ret.add(new Instruction("movq", input.getReg(0), input.getReg(2)));
+            ret.add(new Instruction("imulq", input.getReg(1), input.getReg(2)));
+            break;
          case "div":
-            ret = "movq " + input.getReg(0) + ", " + "%rax";
-            ret += "\nmovq %rax, %rdx";
-            ret += "\nsarq $63, %rdx";
-            ret += "\nidivq " + input.getReg(1);
-            ret += "\nmov %rax, " + input.getReg(2);
-            return ret;
+            ret.add(new Instruction("movq", input.getReg(0), "%rax"));
+            ret.add(new Instruction("movq", "%rax", "%rdx"));
+            ret.add(new Instruction("sarq", "$63", "%rdx"));
+            ret.add(new Instruction("idviq", input.getReg(1)));
+            ret.add(new Instruction("movq", "%rax", input.getReg(2)));
+            break;
          case "loadinargument":
             switch (input.getReg(1))
             {
                case "0":
-                  ret = "mov %rdi, ";
+                  ret.add(new Instruction("movq", "%rdi", input.getReg(2)));
                   break;
                case "1":
-                  ret = "mov %rsi, ";
+                  ret.add(new Instruction("movq", "%rsi", input.getReg(2)));
                   break;
                case "2":
-                  ret = "mov %rdx, ";
+                  ret.add(new Instruction("movq", "%rdx", input.getReg(2)));
                   break;
                case "3":
-                  ret = "mov %rcx, ";
+                  ret.add(new Instruction("movq", "%rcx", input.getReg(2)));
                   break;
                case "4":
-                  ret = "mov %r8, ";
+                  ret.add(new Instruction("movq", "%r8", input.getReg(2)));
                   break;
                case "5":
-                  ret = "mov %r9, ";
+                  ret.add(new Instruction("movq", "%r9", input.getReg(2)));
                   break;
                default:
-                  ret = "stack";
+                  ret.add(new Instruction("movq", "stack", input.getReg(2)));
             }
-            ret += input.getReg(2);
-            return ret;
+            break;
          case "loadai":
-            return "movq " + input.getReg(1) + "(" + input.getReg(0) + ") " + input.getReg(2);
+            ret.add(new Instruction("movq", input.getReg(1) + "(" + input.getReg(0) + ")", input.getReg(2)));
+            break;
          case "comp":
-            return "cmp " + input.getReg(0) + ", " + input.getReg(1);
+            ret.add(new Instruction("cmp", input.getReg(0), input.getReg(1)));
+            break;
          case "cbreq":
-            ret = "je " + input.getReg(1);
-            ret += "\njne " + input.getReg(2);
-            return ret;
+            ret.add(new Instruction("je", input.getReg(1)));
+            ret.add(new Instruction("jne", input.getReg(2)));
+            break;
          case "movlti":
-            ret = "push %rdi";
-            ret += "\nmovq $1, %rdi";
-            ret += "\ncmovl %rdi, " + input.getReg(2);
-            ret += "\npop %rdi";
-            return ret;
+            ret.add(new Instruction("push", "%rdi"));
+            ret.add(new Instruction("movq", "$1", "%rdi"));
+            ret.add(new Instruction("cmovl", "%rdi", input.getReg(2)));
+            ret.add(new Instruction("pop", "%rdi"));
+            break;
          case "brz":
-            ret = "cmp $0, " + input.getReg(0);
-            ret += "\nje " + input.getReg(1);
-            ret += "\njne " + input.getReg(2);
-            return ret;
+            ret.add(new Instruction("cmp", "$0", input.getReg(0)));
+            ret.add(new Instruction("je", input.getReg(1)));
+            ret.add(new Instruction("jne", input.getReg(2)));
+            break;
          case "movgti":
-            ret = "push %rdi";
-            ret += "\nmovq $1, %rdi";
-            ret += "\ncmovg %rdi, " + input.getReg(2);
-            ret += "\npop %rdi";
-            return ret;
+            ret.add(new Instruction("push", "%rdi"));
+            ret.add(new Instruction("movq", "$1", "%rdi"));
+            ret.add(new Instruction("cmovg", "%rdi", input.getReg(2)));
+            ret.add(new Instruction("pop", "%rdi"));
+            break;
          case "movnei":
-            ret = "push %rdi";
-            ret += "\nmovq $1, %rdi";
-            ret += "\ncmovne %rdi, " + input.getReg(2);
-            ret += "\npop %rdi";
-            return ret;
+            ret.add(new Instruction("push", "%rdi"));
+            ret.add(new Instruction("movq", "$1", "%rdi"));
+            ret.add(new Instruction("cmovne", "%rdi", input.getReg(2)));
+            ret.add(new Instruction("pop", "%rdi"));
+            break;
          case "movlei":
-            ret = "push %rdi";
-            ret += "\nmovq $1, %rdi";
-            ret += "\ncmovle %rdi, " + input.getReg(2);
-            ret += "\npop %rdi";
-            return ret;
+            ret.add(new Instruction("push", "%rdi"));
+            ret.add(new Instruction("movq", "$1", "%rdi"));
+            ret.add(new Instruction("cmovle", "%rdi", input.getReg(2)));
+            ret.add(new Instruction("pop", "%rdi"));
+            break;
          case "movgei":
-            ret = "push %rdi";
-            ret += "\nmovq $1, %rdi";
-            ret += "\ncmovge %rdi, " + input.getReg(2);
-            ret += "\npop %rdi";
-            return ret;
+            ret.add(new Instruction("push", "%rdi"));
+            ret.add(new Instruction("movq", "$1", "%rdi"));
+            ret.add(new Instruction("cmovge", "%rdi", input.getReg(2)));
+            ret.add(new Instruction("pop", "%rdi"));
+            break;
          case "movqi":
-            ret = "push %rdi";
-            ret += "\nmovq $1, %rdi";
-            ret += "\ncmove %rdi, " + input.getReg(2);
-            ret += "\npop %rdi";
-            return ret;
+            ret.add(new Instruction("push", "%rdi"));
+            ret.add(new Instruction("movq", "$1", "%rdi"));
+            ret.add(new Instruction("cmove", "%rdi", input.getReg(2)));
+            ret.add(new Instruction("pop", "%rdi"));
+            break;
          case "xori":
-            return "xorq $1, " + input.getReg(0);
+            ret.add(new Instruction("xorq", "$1", input.getReg(0)));
+            break;
          case "and":
             ret = "mov " + input.getReg(0) + ", " + input.getReg(2);
             ret += "\nand " + input.getReg(1) + ", " + input.getReg(2);
             return ret;
+            ret.add(new Instruction("mov", input.getReg(0), input.getReg(2)));
+            ret.add(new Instruction("and", input.getReg(1), input.getReg(2)));
+            break;
          case "or":
-            ret = "mov " + input.getReg(0) + ", " + input.getReg(2);
-            ret += "\nor " + input.getReg(1) + ", " + input.getReg(2);
-            return ret;
+            ret.add(new Instruction("mov", input.getReg(0), input.getReg(2)));
+            ret.add(new Instruction("or", input.getReg(1), input.getReg(2)));
+            break;
          default: // for labels
-            return input.getInst();
+            ret.add(new Instruction(input.getInst()));
       }
+
+      return ret;
    }
 
    public String Convert(ArrayList<Block> blocks)
