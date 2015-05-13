@@ -1,6 +1,7 @@
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Set;
 
 public class RegisterGraph
 {
@@ -42,6 +43,16 @@ public class RegisterGraph
    public HashSet<String> getNeighbors(String r1)
    {
       return (HashSet<String>)graph.get(r1).clone();
+   }
+
+   public int countNeighbors(String r1)
+   {
+      return graph.get(r1).size();
+   }
+
+   public Set<String> getRegisters()
+   {
+      return graph.keySet();
    }
 
    public void removeRegister(String r1)

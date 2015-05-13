@@ -68,14 +68,14 @@ public class Instruction
 
         case "cmp":
            if (arg1.charAt(0) != '$')
-              ret.add(arg1.substring(1));
+              ret.add(arg1);
            if (arg2.charAt(0) != '$')
-              ret.add(arg2.substring(1));
+              ret.add(arg2);
            break;
 
         default:
            if (!arg1.isEmpty() && arg1.charAt(0) != '$' && !arg1.equals("scan") && !arg1.equals("scanVar") && !arg1.equals("print"))
-              ret.add(arg1.substring(1));
+              ret.add(arg1);
       }
 
       return ret;
@@ -88,9 +88,9 @@ public class Instruction
       switch (inst)
       {
         case "call":
-           ret.add("rax");
-           ret.add("rdx");
-           ret.add("rcx");
+           ret.add("%rax");
+           ret.add("%rdx");
+           ret.add("%rcx");
            break;
 
         case "ret":
@@ -101,29 +101,39 @@ public class Instruction
            break;
 
         case "idivq":
-           ret.add("rax");
-           ret.add("rdx");
+           ret.add("%rax");
+           ret.add("%rdx");
            break;
 
         case "neg":
-           ret.add(arg1.substring(1));
+           ret.add(arg1);
 
         default:
            if (!arg2.isEmpty() && !arg2.equals("scan") && !arg2.equals("scanVar") && !arg2.equals("print"))
-              ret.add(arg2.substring(1));
+              ret.add(arg2);
       }
 
       return ret;
    }
 
-   public void setSource(String source)
+   public void setArg1(String source)
    {
       arg1 = source;
    }
 
-   public void setTarget(String target)
+   public void setArg2(String target)
    {
       arg2 = target;
+   }
+
+   public String getArg1()
+   {
+      return arg1;
+   }
+
+   public String getArg2()
+   {
+      return arg2;
    }
 
    @Override

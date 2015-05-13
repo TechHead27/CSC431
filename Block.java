@@ -202,35 +202,7 @@ public class Block implements Iterable<Block>
    public ArrayList<Iloc> getIlocs()
    {
       ArrayList<Iloc> ret = new ArrayList<Iloc>();
-      LinkedList<Block> toVisit = new LinkedList<Block>();
-      toVisit.offer(this);
-
-      while (!toVisit.isEmpty())
-      {
-         Block current = toVisit.poll();
-         if (!(current.visited))
-         {
-            current.visited = true;
-            String[] parts = current.label.split(":");
-            if (parts[1].equals("then"))
-            {
-               for (int i = current.succ.size()-1; i > 0; i--)
-                  toVisit.push(current.succ.get(i));
-            }
-            else if (parts[1].equals("else"))
-            {
-               toVisit.push(current.succ.get(0));
-               for (int i = current.succ.size()-1; i > 0; i--)
-                  toVisit.push(current.succ.get(i));
-            }
-            else
-            {
-               for (int i = current.succ.size()-1; i >= 0; i--)
-                  toVisit.push(current.succ.get(i));
-            }
-            ret.addAll(current.ilocs);
-         }
-      }
+      ret.addAll(this.ilocs);
       return ret;
    }
 
@@ -292,5 +264,10 @@ public class Block implements Iterable<Block>
    public ArrayList<Instruction> getAssembly()
    {
       return (ArrayList<Instruction>)assembly.clone();
+   }
+
+   public void setAssembly(ArrayList<Instruction> insts)
+   {
+      assembly = insts;
    }
 }

@@ -1,5 +1,4 @@
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.*;
 
 public class IlocToAsm
 {
@@ -212,9 +211,12 @@ public class IlocToAsm
 
    public void Convert(ArrayList<Block> blocks)
    {
-      for (Block b : blocks)
-         for (Iloc i : b.getIlocs())
-            b.addInstructions(ConvertInst(i));
+      for (Block head : blocks)
+      {
+         for (Block b : head)
+            for (Iloc i : b.getIlocs())
+               b.addInstructions(ConvertInst(i));
+      }
       
       for (Iloc i : header.getIlocs())
          header.addInstructions(ConvertInst(i));
@@ -253,5 +255,111 @@ public class IlocToAsm
          iter.next().calculateInterference(g);
 
       System.err.print(g.toString());
+      HashMap<String, String> allocations = new HashMap<String, String>();
+      LinkedList<String> stack = constructStack(g);
+      ArrayList<String> spilled = new ArrayList<String>();
+
+      while (!stack.isEmpty())
+      {
+         String register = stack.pop();
+         
+         if (register.charAt(0) == '%')
+            allocations.put(register, register);
+         else
+         {
+            HashSet<String> candidates = (HashSet<String>)UsableRegisters.clone();
+            for (String neighbor : g.getNeighbors(register))
+            {
+               String used = allocations.get(neighbor);
+               candidates.remove(used);
+            }
+
+            if (candidates.isEmpty()) // spill on to stack
+            {
+               spilled.add(register);
+            }
+            else
+               allocations.put(register, candidates.iterator().next());
+         }
+      }
+      
+      // Now every virtual register has been given a real location
+      ReplaceRegisters(head, allocations, spilled);
+
+      // Add stack reservation code to head
+      ArrayList<Instruction> insts = head.getAssembly();
+      insts.add(1, new Instruction("subq", "$" + spilled.size()*8, "%rsp"));
+      head.setAssembly(insts);
+
+      for (Block b : head)
+      {
+         if (b.getLabel().contains(":end"))
+         {
+            insts = b.getAssembly();
+            insts.add(insts.size() - 1, new Instruction("addq", "$" + spilled.size()*8, "%rsp"));
+         }
+      }
    }
+
+   private LinkedList<String> constructStack(RegisterGraph g)
+   {
+      Set<String> registers = g.getRegisters();
+      LinkedList<String> stack = new LinkedList<String>();
+      PriorityQueue<String> constrained = new PriorityQueue<String>(20, new RegisterComparator(g));
+
+      for (String register : registers)
+      {
+         if (register.charAt(0) != '%' && g.countNeighbors(register) <= UsableRegisters.size())
+            stack.push(register);
+         else if (register.charAt(0) != '%')
+            constrained.offer(register);
+      }
+
+      while (!constrained.isEmpty())
+         stack.push(constrained.poll());
+
+      for (String register : registers)
+         if (register.charAt(0) == '%')
+            stack.push(register);
+
+      return stack;
+   }
+
+   private void ReplaceRegisters(Block head, HashMap<String, String> allocations, ArrayList<String> spilled)
+   {
+      for (Block b : head)
+      {
+         ArrayList<Instruction> insts = b.getAssembly();
+         for (int i = 0; i < insts.size(); i++)
+         {
+            String arg1 = insts.get(i).getArg1();
+            String arg2 = insts.get(i).getArg2();
+            
+            if (spilled.contains(arg1))
+            {
+               insts.get(i).setArg1("%r14");
+               insts.add(i, new Instruction("movq", "%rsp", "%r14", ""+spilled.indexOf(arg1)*8, true));
+               i++;
+            }
+            else if (allocations.containsKey(arg1))
+            {
+               insts.get(i).setArg1(allocations.get(arg1));
+            }
+            if (spilled.contains(arg2))
+            {
+               insts.get(i).setArg2("%r15");
+               insts.add(i, new Instruction("movq", "%r15", "%rsp", ""+spilled.indexOf(arg2)*8, false));
+               i++;
+            }
+            else if (allocations.containsKey(arg2))
+            {
+               insts.get(i).setArg2(allocations.get(arg2));
+            }
+         }
+         b.setAssembly(insts);
+      }
+   }
+
+   private static final String[] SET_VALUES = new String[] {"%rax", "%rbx", "%rcx", "%rdx", "%rbp", "%rsi", "%r8", "%r9", "%r10", "%r11", "%rdi", "%r12", "%r13"};
+   public static final HashSet<String> UsableRegisters = new HashSet<String>(Arrays.asList(SET_VALUES));
 }

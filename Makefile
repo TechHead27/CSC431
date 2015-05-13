@@ -1,4 +1,4 @@
-SOURCES=Block.java BoolType.java Check.java Compile.java FunType.java IntType.java Iloc.java NullType.java RecType.java StructType.java SyntaxException.java Type.java VoidType.java IlocToAsm.java Instruction.java
+SOURCES=Block.java BoolType.java Check.java Compile.java FunType.java IntType.java Iloc.java NullType.java RecType.java StructType.java SyntaxException.java Type.java VoidType.java IlocToAsm.java Instruction.java RegisterComparator.java
 CLASSES=$(SOURCES:.java=.class)
 
 all: $(CLASSES)
