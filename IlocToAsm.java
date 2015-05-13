@@ -47,6 +47,7 @@ public class IlocToAsm
             break;
          case "add":
             ret.add(new Instruction("movq", input.getReg(0), input.getReg(2)));
+            ret.add(new Instruction("addq", input.getReg(1), input.getReg(2)));
             break;
          case "addi":
             ret.add(new Instruction("movq", input.getReg(0), input.getReg(2)));
