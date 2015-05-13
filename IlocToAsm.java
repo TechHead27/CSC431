@@ -365,6 +365,6 @@ public class IlocToAsm
       }
    }
 
-   private static final String[] SET_VALUES = new String[] {"%rax", "%rbx", "%rcx", "%rdx", "%rbp", "%rsi", "%r8", "%r9", "%r10", "%r11", "%rdi", "%r12", "%r13"};
+   private static final String[] SET_VALUES = new String[] {"%rax", "%rbx", "%rcx", "%rdx", "%rsi", "%r8", "%r9", "%r10", "%r11", "%rdi", "%r12", "%r13"};
    public static final HashSet<String> UsableRegisters = new HashSet<String>(Arrays.asList(SET_VALUES));
 }

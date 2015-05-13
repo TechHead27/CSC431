@@ -74,7 +74,7 @@ public class Instruction
            break;
 
         default:
-           if (!arg1.isEmpty() && arg1.charAt(0) != '$' && !arg1.equals("scan") && !arg1.equals("scanVar") && !arg1.equals("print"))
+           if (!arg1.isEmpty() && arg1.charAt(0) != '$' && !arg1.equals("$scan") && !arg1.contains("scanVar") && !arg1.equals("$print"))
               ret.add(arg1);
       }
 
@@ -91,6 +91,12 @@ public class Instruction
            ret.add("%rax");
            ret.add("%rdx");
            ret.add("%rcx");
+           ret.add("%rsi");
+           ret.add("%rdi");
+           ret.add("%r8");
+           ret.add("%r9");
+           ret.add("%r10");
+           ret.add("%r11");
            break;
 
         case "ret":
@@ -109,7 +115,7 @@ public class Instruction
            ret.add(arg1);
 
         default:
-           if (!arg2.isEmpty() && !arg2.equals("scan") && !arg2.equals("scanVar") && !arg2.equals("print"))
+           if (!arg2.isEmpty() && !arg2.equals("$scan") && !arg2.contains("scanVar") && !arg2.equals("$print"))
               ret.add(arg2);
       }
 
