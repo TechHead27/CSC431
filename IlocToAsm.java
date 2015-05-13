@@ -164,7 +164,7 @@ public class IlocToAsm
             break;
          case "movlti":
             ret.add(new Instruction("movq", "$1", input.getReg(0)));
-            ret.add(new Instruction("cmovl", input.getReg(0)), input.getReg(2)));
+            ret.add(new Instruction("cmovl", input.getReg(0), input.getReg(2)));
             break;
          case "brz":
             ret.add(new Instruction("cmp", "$0", input.getReg(0)));
@@ -173,23 +173,23 @@ public class IlocToAsm
             break;
          case "movgti":
             ret.add(new Instruction("movq", "$1", input.getReg(0)));
-            ret.add(new Instruction("cmovg", input.getReg(0)), input.getReg(2)));
+            ret.add(new Instruction("cmovg", input.getReg(0), input.getReg(2)));
             break;
          case "movnei":
             ret.add(new Instruction("movq", "$1", input.getReg(0)));
-            ret.add(new Instruction("cmovne", input.getReg(0)), input.getReg(2)));
+            ret.add(new Instruction("cmovne", input.getReg(0), input.getReg(2)));
             break;
          case "movlei":
             ret.add(new Instruction("movq", "$1", input.getReg(0)));
-            ret.add(new Instruction("cmovle", input.getReg(0)), input.getReg(2)));
+            ret.add(new Instruction("cmovle", input.getReg(0), input.getReg(2)));
             break;
          case "movgei":
             ret.add(new Instruction("movq", "$1", input.getReg(0)));
-            ret.add(new Instruction("cmovge", input.getReg(0)), input.getReg(2)));
+            ret.add(new Instruction("cmovge", input.getReg(0), input.getReg(2)));
             break;
          case "movqi":
             ret.add(new Instruction("movq", "$1", input.getReg(0)));
-            ret.add(new Instruction("cmove", input.getReg(0)), input.getReg(2)));
+            ret.add(new Instruction("cmove", input.getReg(0), input.getReg(2)));
             break;
          case "xori":
             ret.add(new Instruction("xorq", "$1", input.getReg(0)));
