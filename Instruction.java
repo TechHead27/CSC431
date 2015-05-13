@@ -38,4 +38,15 @@ public class Instruction
    {
       return arg2;
    }
+
+   @Override
+   public String toString()
+   {
+      String ret = inst;
+      if (!arg1.isEmpty())
+         ret += " " + arg1;
+      if (!arg2.isEmpty())
+         ret += ", " + arg2;
+      return ret;
+   }
 }

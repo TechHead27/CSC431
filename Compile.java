@@ -39,7 +39,12 @@ public class Compile
                   System.out.println(b.getGraph());
                }
             }
-            System.out.println(converter.Convert(functionBlocks));
+            converter.Convert(functionBlocks);
+
+            for (Block b : functionBlocks)
+            {
+               System.out.print(b.getAssembly());
+            }
          }
          catch (SyntaxException e)
          {

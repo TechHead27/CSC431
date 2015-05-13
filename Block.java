@@ -7,7 +7,9 @@ public class Block
    private ArrayList<Block> succ;
    private String label;
    private boolean visited = false;
+   private boolean ASMvisited = false;
    private ArrayList<Iloc> ilocs = new ArrayList<Iloc>();
+   private ArrayList<Instruction> assembly = new ArrayList<Instruction>();
    private boolean if_fix = false;
 
    public Block()
@@ -59,6 +61,15 @@ public class Block
       }
       return ret;
    }
+   
+   public String printAsm()
+   {
+      String ret = "";
+      for (Instruction inst : assembly)
+         ret += inst.toString() + "\n";
+      
+      return ret;
+   }
 
    public String getGraph()
    {
@@ -103,6 +114,48 @@ public class Block
       return ret;
    }
 
+   public String getAssembly()
+   {
+      String ret = "";
+      LinkedList<Block> toVisit = new LinkedList<Block>();
+      toVisit.offer(this);
+
+      while (!toVisit.isEmpty())
+      {
+         Block current = toVisit.poll();
+         if (!(current.ASMvisited))
+         {
+            current.ASMvisited = true;
+            String[] parts = current.label.split(":");
+            if (parts[1].equals("ifend") && !current.if_fix)
+            {
+               current.if_fix = true;
+               current.ASMvisited = false;
+               toVisit.push(current);
+               toVisit.push(current.succ.get(1));
+               toVisit.push(current.succ.get(0));
+            }
+            else
+            {
+               if (parts[1].equals("whiletest"))
+               {
+                  toVisit.push(current.succ.get(1));
+                  toVisit.push(current.succ.get(0));
+               }
+               else
+               {
+                  for (Block b : current.succ)
+                  {
+                     toVisit.offer(b);
+                  }
+               }
+               ret += current.printAsm();
+            }
+         }
+      }
+      return ret;
+   }
+
    public void addIloc(Iloc instruction)
    {
       ilocs.add(instruction);
@@ -121,7 +174,6 @@ public class Block
          {
             current.visited = true;
             String[] parts = current.label.split(":");
-            System.err.println(current.label + " " + parts.length);
             if (parts[1].equals("ifend") && !current.if_fix)
             {
                current.if_fix = true;
@@ -149,5 +201,10 @@ public class Block
          }
       }
       return ret;
+   }
+
+   public void addInstructions(ArrayList<Instruction> insts)
+   {
+      assembly.addAll(insts);
    }
 }

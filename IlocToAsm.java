@@ -86,7 +86,7 @@ public class IlocToAsm
                   ret.add(new Instruction("movq", input.getReg(0), "%rcx"));
                   break;
                case 4:
-                  ret.add(new Instruction("movq", input.getReg(0), "%r8));
+                  ret.add(new Instruction("movq", input.getReg(0), "%r8"));
                   break;
                case 5:
                   ret.add(new Instruction("movq", input.getReg(0), "%r9"));
@@ -102,12 +102,12 @@ public class IlocToAsm
             ret.add(new Instruction("movq", "%rax", input.getReg(0)));
             break;
          case "loadglobal":
-            ret.add(new Instruction("movq", input.getReg(0) + "(%rip)", + input.getReg(1)));
+            ret.add(new Instruction("movq", input.getReg(0) + "(%rip)", input.getReg(1)));
             break;
          case "new":
             ret.add(new Instruction("movq", input.getReg(0), "%rdi"));
             ret.add(new Instruction("call", "malloc"));
-            ret.add(new Instuction("movq", "%rax", input.getReg(1)));
+            ret.add(new Instruction("movq", "%rax", input.getReg(1)));
             break;
          case "del":
             ret.add(new Instruction("movq", input.getReg(0), "%rdi"));
@@ -208,9 +208,6 @@ public class IlocToAsm
             ret.add(new Instruction("xorq", "$1", input.getReg(0)));
             break;
          case "and":
-            ret = "mov " + input.getReg(0) + ", " + input.getReg(2);
-            ret += "\nand " + input.getReg(1) + ", " + input.getReg(2);
-            return ret;
             ret.add(new Instruction("mov", input.getReg(0), input.getReg(2)));
             ret.add(new Instruction("and", input.getReg(1), input.getReg(2)));
             break;
@@ -225,29 +222,13 @@ public class IlocToAsm
       return ret;
    }
 
-   public String Convert(ArrayList<Block> blocks)
+   public void Convert(ArrayList<Block> blocks)
    {
-      StringBuilder ret = new StringBuilder(200);
-      ArrayList<Iloc> ilocs;
-      int index = 0;
-
       for (Block b : blocks)
-      {
-         ilocs = b.getIlocs();
-         for (Iloc i : ilocs)
-         {
-            ret.append(ConvertInst(i) + "\n");
-         }
-         ret.append("\n");
-      }
+         for (Iloc i : b.getIlocs())
+            b.addInstructions(ConvertInst(i));
       
-      ilocs = header.getIlocs();
-      String headerSt = "";
-      for (Iloc i : ilocs)
-      {
-         headerSt += ConvertInst(i) + "\n";
-      }
-
-      return headerSt + "\n" + ret.toString();
+      for (Iloc i : header.getIlocs())
+         header.addInstructions(ConvertInst(i));
    }
 }
