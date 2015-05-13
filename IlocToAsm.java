@@ -297,6 +297,7 @@ public class IlocToAsm
          {
             insts = b.getAssembly();
             insts.add(insts.size() - 1, new Instruction("addq", "$" + spilled.size()*8, "%rsp"));
+            b.setAssembly(insts);
          }
       }
    }
