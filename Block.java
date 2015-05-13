@@ -243,11 +243,17 @@ public class Block implements Iterable<Block>
       for (int i = assembly.size() - 1; i >= 0; i--)
       {
          Instruction current = assembly.get(i);
-         for (String s : LiveNow)
-         {
+         if (LiveNow.isEmpty())
             for (String t : current.getTarget())
+               g.addVertex(t);
+         else
+         {
+            for (String s : LiveNow)
             {
-               g.addEdge(s, t);
+               for (String t : current.getTarget())
+               {
+                  g.addEdge(s, t);
+               }
             }
          }
 

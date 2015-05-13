@@ -35,6 +35,12 @@ public class RegisterGraph
       h2.add(r1);
    }
 
+   public void addVertex(String r1)
+   {
+      if (!graph.containsKey(r1))
+         graph.put(r1, new HashSet<String>());
+   }
+
    public boolean isConnected(String r1, String r2)
    {
       return graph.get(r1).contains(r2);
