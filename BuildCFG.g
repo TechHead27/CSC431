@@ -285,11 +285,11 @@ return_stmt
    returns [Block end = null;]
    :  ^(ast=RETURN (e=expression[$statement::block])?)
       {
-         $statement::block.connect($function::end);
          if ($e.reg != -1)
             $statement::block.addIloc(new Iloc("storeret", "r" + $e.reg));
          $statement::block.addIloc(new Iloc("jumpi", $function::name + "end"));
          end = new Block($function::name + ":afterreturn:" + $function::count);
+         $statement::block.connect(end);
          $function::count++;
       }
    ;
