@@ -10,7 +10,6 @@ public class Block
    private boolean ASMvisited = false;
    private ArrayList<Iloc> ilocs = new ArrayList<Iloc>();
    private ArrayList<Instruction> assembly = new ArrayList<Instruction>();
-   private boolean if_fix = false;
 
    public Block()
    {
@@ -84,31 +83,24 @@ public class Block
          {
             current.visited = true;
             String[] parts = current.label.split(":");
-            if (parts[1].equals("ifend") && !current.if_fix)
+            if (parts[1].equals("then"))
             {
-               current.if_fix = true;
-               current.visited = false;
-               toVisit.push(current);
-               toVisit.push(current.succ.get(1));
+               for (int i = current.succ.size()-1; i > 0; i--)
+                  toVisit.push(current.succ.get(i));
+            }
+            else if (parts[1].equals("else"))
+            {
                toVisit.push(current.succ.get(0));
+               for (int i = current.succ.size()-1; i > 0; i--)
+                  toVisit.push(current.succ.get(i));
             }
             else
             {
-               if (parts[1].equals("whiletest"))
-               {
-                  toVisit.push(current.succ.get(1));
-                  toVisit.push(current.succ.get(0));
-               }
-               else
-               {
-                  for (Block b : current.succ)
-                  {
-                     toVisit.offer(b);
-                  }
-               }
-               ret += current.toString();
-               ret += current.printIloc();
+               for (int i = current.succ.size()-1; i >= 0; i--)
+                  toVisit.push(current.succ.get(i));
             }
+            ret += current.toString();
+            ret += current.printIloc();
          }
       }
       return ret;
@@ -127,30 +119,23 @@ public class Block
          {
             current.ASMvisited = true;
             String[] parts = current.label.split(":");
-            if (parts[1].equals("ifend") && !current.if_fix)
+            if (parts[1].equals("then"))
             {
-               current.if_fix = true;
-               current.ASMvisited = false;
-               toVisit.push(current);
-               toVisit.push(current.succ.get(1));
+               for (int i = current.succ.size()-1; i > 0; i--)
+                  toVisit.push(current.succ.get(i));
+            }
+            else if (parts[1].equals("else"))
+            {
                toVisit.push(current.succ.get(0));
+               for (int i = current.succ.size()-1; i > 0; i--)
+                  toVisit.push(current.succ.get(i));
             }
             else
             {
-               if (parts[1].equals("whiletest"))
-               {
-                  toVisit.push(current.succ.get(1));
-                  toVisit.push(current.succ.get(0));
-               }
-               else
-               {
-                  for (Block b : current.succ)
-                  {
-                     toVisit.offer(b);
-                  }
-               }
-               ret += current.printAsm();
+               for (int i = current.succ.size()-1; i >= 0; i--)
+                  toVisit.push(current.succ.get(i));
             }
+            ret += current.printAsm();
          }
       }
       return ret;
@@ -174,30 +159,23 @@ public class Block
          {
             current.visited = true;
             String[] parts = current.label.split(":");
-            if (parts[1].equals("ifend") && !current.if_fix)
+            if (parts[1].equals("then"))
             {
-               current.if_fix = true;
-               current.visited = false;
-               toVisit.push(current);
-               toVisit.push(current.succ.get(1));
+               for (int i = current.succ.size()-1; i > 0; i--)
+                  toVisit.push(current.succ.get(i));
+            }
+            else if (parts[1].equals("else"))
+            {
                toVisit.push(current.succ.get(0));
+               for (int i = current.succ.size()-1; i > 0; i--)
+                  toVisit.push(current.succ.get(i));
             }
             else
             {
-               if (parts[1].equals("whiletest"))
-               {
-                  toVisit.push(current.succ.get(1));
-                  toVisit.push(current.succ.get(0));
-               }
-               else
-               {
-                  for (Block b : current.succ)
-                  {
-                     toVisit.offer(b);
-                  }
-               }
-               ret.addAll(current.ilocs);
+               for (int i = current.succ.size()-1; i >= 0; i--)
+                  toVisit.push(current.succ.get(i));
             }
+            ret.addAll(current.ilocs);
          }
       }
       return ret;
