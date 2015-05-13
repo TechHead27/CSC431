@@ -56,8 +56,7 @@ public class IlocToAsm
             ret.add(new Instruction("movq", input.getReg(0), input.getReg(1)));
             break;
          case "storeai":
-            // need to replace field name with offset
-            ret.add(new Instruction("movq", input.getReg(0), input.getReg(2) + "(" + input.getReg(1) + ")"));
+            ret.add(new Instruction("movq", input.getReg(0), input.getReg(1), input.getReg(2), false));
             break;
          case "storeglobal":
             if (!globals.contains(input.getReg(1)))
@@ -154,7 +153,7 @@ public class IlocToAsm
             }
             break;
          case "loadai":
-            ret.add(new Instruction("movq", input.getReg(1) + "(" + input.getReg(0) + ")", input.getReg(2)));
+            ret.add(new Instruction("movq", input.getReg(0), input.getReg(2), input.getReg(1), true));
             break;
          case "comp":
             ret.add(new Instruction("cmp", input.getReg(0), input.getReg(1)));
