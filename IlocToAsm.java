@@ -35,7 +35,7 @@ public class IlocToAsm
             break;
          case "read":
             ret.add(new Instruction("movq", "scan", "%rdi"));
-            ret.add(new Instruction("lea", "scanVar", "%rsi"));
+            ret.add(new Instruction("leaq", "scanVar", "%rsi"));
             ret.add(new Instruction("call", "scanf"));
             ret.add(new Instruction("movq", "scanVar", input.getReg(0)));
             break;
@@ -163,10 +163,8 @@ public class IlocToAsm
             ret.add(new Instruction("jne", input.getReg(2)));
             break;
          case "movlti":
-            ret.add(new Instruction("push", "%rdi"));
-            ret.add(new Instruction("movq", "$1", "%rdi"));
-            ret.add(new Instruction("cmovl", "%rdi", input.getReg(2)));
-            ret.add(new Instruction("pop", "%rdi"));
+            ret.add(new Instruction("movq", "$1", input.getReg(0)));
+            ret.add(new Instruction("cmovl", input.getReg(0)), input.getReg(2)));
             break;
          case "brz":
             ret.add(new Instruction("cmp", "$0", input.getReg(0)));
@@ -174,34 +172,24 @@ public class IlocToAsm
             ret.add(new Instruction("jne", input.getReg(2)));
             break;
          case "movgti":
-            ret.add(new Instruction("push", "%rdi"));
-            ret.add(new Instruction("movq", "$1", "%rdi"));
-            ret.add(new Instruction("cmovg", "%rdi", input.getReg(2)));
-            ret.add(new Instruction("pop", "%rdi"));
+            ret.add(new Instruction("movq", "$1", input.getReg(0)));
+            ret.add(new Instruction("cmovg", input.getReg(0)), input.getReg(2)));
             break;
          case "movnei":
-            ret.add(new Instruction("push", "%rdi"));
-            ret.add(new Instruction("movq", "$1", "%rdi"));
-            ret.add(new Instruction("cmovne", "%rdi", input.getReg(2)));
-            ret.add(new Instruction("pop", "%rdi"));
+            ret.add(new Instruction("movq", "$1", input.getReg(0)));
+            ret.add(new Instruction("cmovne", input.getReg(0)), input.getReg(2)));
             break;
          case "movlei":
-            ret.add(new Instruction("push", "%rdi"));
-            ret.add(new Instruction("movq", "$1", "%rdi"));
-            ret.add(new Instruction("cmovle", "%rdi", input.getReg(2)));
-            ret.add(new Instruction("pop", "%rdi"));
+            ret.add(new Instruction("movq", "$1", input.getReg(0)));
+            ret.add(new Instruction("cmovle", input.getReg(0)), input.getReg(2)));
             break;
          case "movgei":
-            ret.add(new Instruction("push", "%rdi"));
-            ret.add(new Instruction("movq", "$1", "%rdi"));
-            ret.add(new Instruction("cmovge", "%rdi", input.getReg(2)));
-            ret.add(new Instruction("pop", "%rdi"));
+            ret.add(new Instruction("movq", "$1", input.getReg(0)));
+            ret.add(new Instruction("cmovge", input.getReg(0)), input.getReg(2)));
             break;
          case "movqi":
-            ret.add(new Instruction("push", "%rdi"));
-            ret.add(new Instruction("movq", "$1", "%rdi"));
-            ret.add(new Instruction("cmove", "%rdi", input.getReg(2)));
-            ret.add(new Instruction("pop", "%rdi"));
+            ret.add(new Instruction("movq", "$1", input.getReg(0)));
+            ret.add(new Instruction("cmove", input.getReg(0)), input.getReg(2)));
             break;
          case "xori":
             ret.add(new Instruction("xorq", "$1", input.getReg(0)));

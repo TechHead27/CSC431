@@ -351,43 +351,53 @@ expression[Block currentBlock]
    returns [int reg = -1, Type typeName = null;]
    :  ^(ast=LT lft=expression[currentBlock] rht=expression[currentBlock])
          {
+            int temp = $function::regValues.size();
+            $function::regValues.add("::1");
             $reg = $function::regValues.size();
             $function::regValues.add("::0");
             currentBlock.addIloc(new Iloc("loadi", "0", "r" + $reg));
             currentBlock.addIloc(new Iloc("comp", "r" + $lft.reg, "r" + $rht.reg, "ccr"));
-            currentBlock.addIloc(new Iloc("movlti", "ccr", "1", "r" + $reg));
+            currentBlock.addIloc(new Iloc("movlti", "r" + temp, "1", "r" + $reg));
          }
    |  ^(ast=GT lft=expression[currentBlock] rht=expression[currentBlock])
          {
+            int temp = $function::regValues.size();
+            $function::regValues.add("::1");
             $reg = $function::regValues.size();
             $function::regValues.add("::0");
             currentBlock.addIloc(new Iloc("loadi", "0", "r" + $reg));
             currentBlock.addIloc(new Iloc("comp", "r" + $lft.reg, "r" + $rht.reg, "ccr"));
-            currentBlock.addIloc(new Iloc("movgti", "ccr", "1", "r" + $reg));
+            currentBlock.addIloc(new Iloc("movgti", "r" + temp, "1", "r" + $reg));
          }
    |  ^(ast=NE lft=expression[currentBlock] rht=expression[currentBlock])
          {
+            int temp = $function::regValues.size();
+            $function::regValues.add("::1");
             $reg = $function::regValues.size();
             $function::regValues.add("::0");
             currentBlock.addIloc(new Iloc("loadi", "0", "r" + $reg));
             currentBlock.addIloc(new Iloc("comp", "r" + $lft.reg, "r" + $rht.reg, "ccr"));
-            currentBlock.addIloc(new Iloc("movnei", "ccr", "1", "r" + $reg));
+            currentBlock.addIloc(new Iloc("movnei", "r" + temp, "1", "r" + $reg));
          }
    |  ^(ast=LE lft=expression[currentBlock] rht=expression[currentBlock])
          {
+            int temp = $function::regValues.size();
+            $function::regValues.add("::1");
             $reg = $function::regValues.size();
             $function::regValues.add("::0");
             currentBlock.addIloc(new Iloc("loadi", "0", "r" + $reg));
             currentBlock.addIloc(new Iloc("comp", "r" + $lft.reg, "r" + $rht.reg, "ccr"));
-            currentBlock.addIloc(new Iloc("movlei", "ccr", "1", "r" + $reg));
+            currentBlock.addIloc(new Iloc("movlei", "r" + temp, "1", "r" + $reg));
          }
    |  ^(ast=GE lft=expression[currentBlock] rht=expression[currentBlock])
          {
+            int temp = $function::regValues.size();
+            $function::regValues.add("::1");
             $reg = $function::regValues.size();
             $function::regValues.add("::0");
             currentBlock.addIloc(new Iloc("loadi", "0", "r" + $reg));
             currentBlock.addIloc(new Iloc("comp", "r" + $lft.reg, "r" + $rht.reg, "ccr"));
-            currentBlock.addIloc(new Iloc("movgei", "ccr", "1", "r" + $reg));
+            currentBlock.addIloc(new Iloc("movgei", "r" + temp, "1", "r" + $reg));
          }
    |  ^(ast=PLUS lft=expression[currentBlock] rht=expression[currentBlock])
          {
