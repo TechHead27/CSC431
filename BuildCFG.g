@@ -186,7 +186,7 @@ assignment
                $end.addIloc(new Iloc("storeglobal", "r" + $e.reg, $l.field_name));
             }
             else
-               $end.addIloc(new Iloc("storeai", "r" + $e.reg, "r" + $l.reg, $l.field_name));
+               $end.addIloc(new Iloc("storeai", "r" + $e.reg,  "r" + $l.reg, ""+((StructType)$l.typeName).getFieldOffset($l.field_name)));
          }
          else
          {
@@ -337,7 +337,7 @@ lvalue[boolean rec]
                $reg = $function::regValues.size();
                $function::regValues.add("::struct");
                $statement::block.addIloc(new Iloc("loadai", "r" + $l.reg, ""+((StructType)$l.typeName).getFieldOffset($field_name), "r" + $reg));
-               $typeName = $l.typeName;
+               $typeName = ((StructType)$l.typeName).getFieldType($field_name);
             }
             else
             {  
@@ -348,7 +348,7 @@ lvalue[boolean rec]
    ;
 
 expression[Block currentBlock] 
-   returns [int reg = -1;]
+   returns [int reg = -1, Type typeName = null;]
    :  ^(ast=LT lft=expression[currentBlock] rht=expression[currentBlock])
          {
             $reg = $function::regValues.size();
@@ -452,7 +452,8 @@ expression[Block currentBlock]
          {
             $reg = $function::regValues.size();
             $function::regValues.add($id.text);
-            currentBlock.addIloc(new Iloc("loadai", "r" + $e.reg, $id.text, "r" + $reg));
+            $typeName = ((StructType)$e.typeName).getFieldType($id.text);
+            $currentBlock.addIloc(new Iloc("loadai", "r" + $e.reg, ""+((StructType)$e.typeName).getFieldOffset($id.text), "r" + $reg));
          }
    |  ie=invocation_exp[currentBlock] {$reg = $ie.reg;}
    |  id=ID
@@ -460,10 +461,17 @@ expression[Block currentBlock]
             int oldReg = $function::regValues.indexOf($id.text);
             $reg = $function::regValues.size();
             $function::regValues.add($id.text);
-            if (sTable.get($id.text) != null)
-               currentBlock.addIloc(new Iloc("loadglobal", $id.text, "r" + $reg));
-            else
+
+            if ($function::localHash.get($id.text) != null)
+            {
                currentBlock.addIloc(new Iloc("mov", "r" + oldReg, "r" + $reg));
+               $typeName = $function::localHash.get($id.text);
+            }
+            else if (sTable.get($id.text) != null)
+            {
+               currentBlock.addIloc(new Iloc("loadglobal", $id.text, "r" + $reg));
+               $typeName = sTable.get($id.text);
+            }
          }
    |  i=INTEGER
          {

@@ -28,7 +28,7 @@ public class StructType extends Type
 
    public int size()
    {
-      return fieldOffsets.size();
+      return fieldOffsets.size() * 8;
    }
 
    public boolean equals(Object o)

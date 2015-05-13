@@ -25,11 +25,11 @@ public class IlocToAsm
             ret.add(new Instruction("ret"));
             break;
          case "storeret":
-            ret.add(new Instruction("movq", input.getReg(0) + "%rax"));
+            ret.add(new Instruction("movq", input.getReg(0), "%rax"));
             break;
          case "print":
             ret.add(new Instruction("movq", "print", "%rdi"));
-            ret.add(new Instruction("movq", input.getReg(0) + "%rsi"));
+            ret.add(new Instruction("movq", input.getReg(0), "%rsi"));
             ret.add(new Instruction("call", "printf"));
             ret.add(new Instruction("movq", "$0", "%rax"));
             break;
