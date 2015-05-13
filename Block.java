@@ -43,7 +43,7 @@ public class Block implements Iterable<Block>
 
          for (Block b : current.getSucc())
          {
-            if (!visited.contains(b))
+            if (!visited.contains(b) && !toVisit.contains(b))
                toVisit.offer(b);
          }
 
