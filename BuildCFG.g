@@ -91,8 +91,8 @@ function
                         $function::end = new Block($id.text + ":end"); } p=parameters[start] r=return_type
          d=fun_decls s=statement_list[$p.end])
          {
-            if (!$s.returns)
-               $function::end.addIloc(new Iloc("ret"));
+            $function::end.addIloc(new Iloc($function::name + "end:"));
+            $function::end.addIloc(new Iloc("ret"));
             $s.end.connect($function::end);
          }
    ;
@@ -288,7 +288,7 @@ return_stmt
          $statement::block.connect($function::end);
          if ($e.reg != -1)
             $statement::block.addIloc(new Iloc("storeret", "r" + $e.reg));
-         $statement::block.addIloc(new Iloc("ret"));
+         $statement::block.addIloc(new Iloc("jumpi", $function::name + "end"));
          end = new Block($function::name + ":afterreturn:" + $function::count);
          $function::count++;
       }
