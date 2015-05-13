@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 public class Instruction
 {
    private String inst;
@@ -47,6 +49,81 @@ public class Instruction
    public String arg2()
    {
       return arg2;
+   }
+
+   public ArrayList<String> getSource()
+   {
+      ArrayList<String> ret = new ArrayList<String>();
+
+      switch (inst)
+      {
+        case "call":
+           break;
+
+        case "ret":
+        case "je":
+        case "jne":
+        case "jmp":
+           break;
+
+        case "cmp":
+           if (arg1.charAt(0) != '$')
+              ret.add(arg1.substring(1));
+           if (arg2.charAt(0) != '$')
+              ret.add(arg2.substring(1));
+           break;
+
+        default:
+           if (!arg1.isEmpty() && arg1.charAt(0) != '$' && !arg1.equals("scan") && !arg1.equals("scanVar") && !arg1.equals("print"))
+              ret.add(arg1.substring(1));
+      }
+
+      return ret;
+   }
+
+   public ArrayList<String> getTarget()
+   {
+      ArrayList<String> ret = new ArrayList<String>();
+
+      switch (inst)
+      {
+        case "call":
+           ret.add("rax");
+           ret.add("rdx");
+           ret.add("rcx");
+           break;
+
+        case "ret":
+        case "je":
+        case "jne":
+        case "jmp":
+        case "cmp":
+           break;
+
+        case "idivq":
+           ret.add("rax");
+           ret.add("rdx");
+           break;
+
+        case "neg":
+           ret.add(arg1.substring(1));
+
+        default:
+           if (!arg2.isEmpty() && !arg2.equals("scan") && !arg2.equals("scanVar") && !arg2.equals("print"))
+              ret.add(arg2.substring(1));
+      }
+
+      return ret;
+   }
+
+   public void setSource(String source)
+   {
+      arg1 = source;
+   }
+
+   public void setTarget(String target)
+   {
+      arg2 = target;
    }
 
    @Override

@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class IlocToAsm
 {
@@ -104,7 +105,7 @@ public class IlocToAsm
             ret.add(new Instruction("movq", input.getReg(0) + "(%rip)", input.getReg(1)));
             break;
          case "new":
-            ret.add(new Instruction("movq", input.getReg(0), "%rdi"));
+            ret.add(new Instruction("movq", "$" + input.getReg(0), "%rdi"));
             ret.add(new Instruction("call", "malloc"));
             ret.add(new Instruction("movq", "%rax", input.getReg(1)));
             break;
@@ -217,5 +218,40 @@ public class IlocToAsm
       
       for (Iloc i : header.getIlocs())
          header.addInstructions(ConvertInst(i));
+
+      AllocateRegisters(blocks);
+      blocks.add(0, header);
+   }
+
+   public void AllocateRegisters(ArrayList<Block> blocks)
+   {
+      for (Block b : blocks)
+         AllocateFunction(b);
+   }
+
+   private void AllocateFunction(Block head)
+   {
+      RegisterGraph g = new RegisterGraph();
+      Iterator<Block> iter = head.iterator();
+
+      while (iter.hasNext())
+         iter.next().calculateGenKillSets();
+
+      iter = head.iterator();
+      boolean unchanged = true;
+
+      while (!unchanged)
+      {
+         unchanged = true;
+         while (iter.hasNext())
+            unchanged = unchanged && iter.next().calculateLiveOut();
+      }
+
+      iter = head.iterator();
+
+      while (iter.hasNext())
+         iter.next().calculateInterference(g);
+
+      System.err.print(g.toString());
    }
 }

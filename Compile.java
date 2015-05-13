@@ -43,7 +43,7 @@ public class Compile
 
             for (Block b : functionBlocks)
             {
-               System.out.print(b.getAssembly());
+               System.out.print(b.printAssembly());
             }
          }
          catch (SyntaxException e)

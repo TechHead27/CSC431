@@ -1,7 +1,9 @@
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.HashSet;
+import java.util.Iterator;
 
-public class Block
+public class Block implements Iterable<Block>
 {
    private ArrayList<Block> pred;
    private ArrayList<Block> succ;
@@ -10,6 +12,50 @@ public class Block
    private boolean ASMvisited = false;
    private ArrayList<Iloc> ilocs = new ArrayList<Iloc>();
    private ArrayList<Instruction> assembly = new ArrayList<Instruction>();
+   private HashSet<String> Gen = new HashSet<String>();
+   private HashSet<String> Kill = new HashSet<String>();
+   private HashSet<String> LiveOut = new HashSet<String>();
+
+   private class BlockIterator implements Iterator<Block>
+   {
+      LinkedList<Block> toVisit;
+      HashSet<Block> visited;
+
+      public BlockIterator(Block start)
+      {
+         toVisit = new LinkedList<Block>();
+         visited = new HashSet<Block>();
+
+         toVisit.offer(start);
+      }
+
+      @Override
+      public boolean hasNext()
+      {
+         return !toVisit.isEmpty();
+      }
+
+      @Override
+      public Block next()
+      {
+         Block current = toVisit.poll();
+         visited.add(current);
+
+         for (Block b : current.getSucc())
+         {
+            if (!visited.contains(b))
+               toVisit.offer(b);
+         }
+
+         return current;
+      }
+
+      @Override
+      public void remove()
+      {
+         throw new UnsupportedOperationException();
+      }
+   }
 
    public Block()
    {
@@ -31,14 +77,20 @@ public class Block
       other.pred.add(this);
    }
 
-   public Block[] getPred()
+   @Override
+   public Iterator<Block> iterator()
    {
-      return (Block[])pred.toArray();
+      return new BlockIterator(this);
    }
 
-   public Block[] getSucc()
+   public ArrayList<Block> getPred()
    {
-      return (Block[])succ.toArray();
+      return (ArrayList<Block>)pred.clone();
+   }
+
+   public ArrayList<Block> getSucc()
+   {
+      return (ArrayList<Block>)succ.clone();
    }
 
    public String getLabel()
@@ -106,7 +158,8 @@ public class Block
       return ret;
    }
 
-   public String getAssembly()
+   
+   public String printAssembly()
    {
       String ret = "";
       LinkedList<Block> toVisit = new LinkedList<Block>();
@@ -181,8 +234,63 @@ public class Block
       return ret;
    }
 
+   public void calculateGenKillSets()
+   {
+      for (Instruction i : assembly)
+      {
+         for (String source : i.getSource())
+         {
+            if (!Kill.contains(source))
+               Gen.add(source);
+         }
+         Kill.addAll(i.getTarget());
+      }
+   }
+
+   // returns whether LiveOut is unchanged
+   public boolean calculateLiveOut()
+   {
+      int oldSize = LiveOut.size();
+
+      for (Block b : succ)
+      {
+         HashSet<String> difference = (HashSet<String>)b.LiveOut.clone();
+         difference.removeAll(b.Kill);
+
+         LiveOut.addAll(b.Gen);
+         LiveOut.addAll(difference);
+      }
+
+      return oldSize == LiveOut.size();
+   }
+
+   public void calculateInterference(RegisterGraph g)
+   {
+      HashSet<String> LiveNow = (HashSet<String>)LiveOut.clone();
+
+      for (int i = assembly.size() - 1; i >= 0; i--)
+      {
+         Instruction current = assembly.get(i);
+         for (String s : LiveNow)
+         {
+            for (String t : current.getTarget())
+            {
+               g.addEdge(s, t);
+            }
+         }
+
+         LiveNow.removeAll(current.getTarget());
+         LiveNow.addAll(current.getSource());
+      }
+   }
+
    public void addInstructions(ArrayList<Instruction> insts)
    {
       assembly.addAll(insts);
+   }
+
+   public ArrayList<Instruction> getAssembly()
+   {
+      return (ArrayList<Instruction>)assembly.clone();
    }
 }
