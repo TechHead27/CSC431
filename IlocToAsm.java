@@ -160,7 +160,7 @@ public class IlocToAsm
             ret.add(new Instruction("movq", input.getReg(0), input.getReg(2), input.getReg(1), true));
             break;
          case "comp":
-            ret.add(new Instruction("cmp", input.getReg(0), input.getReg(1)));
+            ret.add(new Instruction("cmp", input.getReg(1), input.getReg(0)));
             break;
          case "cbreq":
             ret.add(new Instruction("je", input.getReg(1)));
@@ -191,7 +191,7 @@ public class IlocToAsm
             ret.add(new Instruction("movq", "$1", input.getReg(0)));
             ret.add(new Instruction("cmovge", input.getReg(0), input.getReg(2)));
             break;
-         case "movqi":
+         case "moveqi":
             ret.add(new Instruction("movq", "$1", input.getReg(0)));
             ret.add(new Instruction("cmove", input.getReg(0), input.getReg(2)));
             break;
