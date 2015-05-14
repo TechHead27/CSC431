@@ -1,2 +1,12 @@
 *.class
 TypeCheck.java
+*.mini
+*.generated
+*.buildcfg
+*.typecheck
+*.tokens
+*.iloc
+*.s
+MiniLexer.java
+MiniParser.java
+BuildCFG.java
