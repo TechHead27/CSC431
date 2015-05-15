@@ -73,6 +73,16 @@ public class Instruction
               ret.add(arg2);
            break;
 
+        case "cmovl":
+        case "cmovle":
+        case "cmovg":
+        case "cmovge":
+        case "cmove":
+        case "cmovne":
+           ret.add(arg1);
+           ret.add(arg2);
+           break;
+
         default:
            if (!arg1.isEmpty() && arg1.charAt(0) != '$' && !arg1.equals("$scan") && !arg1.contains("scanVar") && !arg1.equals("$print"))
               ret.add(arg1);
@@ -113,6 +123,7 @@ public class Instruction
 
         case "neg":
            ret.add(arg1);
+           break;
 
         default:
            if (!arg2.isEmpty() && !arg2.equals("$scan") && !arg2.contains("scanVar") && !arg2.equals("$print"))
