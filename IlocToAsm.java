@@ -167,7 +167,7 @@ public class IlocToAsm
             ret.add(new Instruction("jne", input.getReg(2)));
             break;
          case "movlti":
-            ret.add(new Instruction("movq", input.getReg(1), input.getReg(0)));
+            ret.add(new Instruction("movq", "$" + input.getReg(1), input.getReg(0)));
             ret.add(new Instruction("cmovl", input.getReg(0), input.getReg(2)));
             break;
          case "brz":
@@ -176,23 +176,23 @@ public class IlocToAsm
             ret.add(new Instruction("jne", input.getReg(2)));
             break;
          case "movgti":
-            ret.add(new Instruction("movq", input.getReg(1), input.getReg(0)));
+            ret.add(new Instruction("movq", "$" + input.getReg(1), input.getReg(0)));
             ret.add(new Instruction("cmovg", input.getReg(0), input.getReg(2)));
             break;
          case "movnei":
-            ret.add(new Instruction("movq", input.getReg(1), input.getReg(0)));
+            ret.add(new Instruction("movq", "$" + input.getReg(1), input.getReg(0)));
             ret.add(new Instruction("cmovne", input.getReg(0), input.getReg(2)));
             break;
          case "movlei":
-            ret.add(new Instruction("movq", input.getReg(1), input.getReg(0)));
+            ret.add(new Instruction("movq", "$" + input.getReg(1), input.getReg(0)));
             ret.add(new Instruction("cmovle", input.getReg(0), input.getReg(2)));
             break;
          case "movgei":
-            ret.add(new Instruction("movq", input.getReg(1), input.getReg(0)));
+            ret.add(new Instruction("movq", "$" + input.getReg(1), input.getReg(0)));
             ret.add(new Instruction("cmovge", input.getReg(0), input.getReg(2)));
             break;
          case "moveqi":
-            ret.add(new Instruction("movq", input.getReg(1), input.getReg(0)));
+            ret.add(new Instruction("movq", "$" + input.getReg(1), input.getReg(0)));
             ret.add(new Instruction("cmove", input.getReg(0), input.getReg(2)));
             break;
          case "xori":
