@@ -1,3 +1,5 @@
 #!/bin/bash
-java Compile $1.mini > $1.s
-gcc $1.s -o $1.out
+TARGET_DIR=$( pwd )
+cd "$( dirname "${BASH_SOURCE[0]}" )"
+java Compile $TARGET_DIR/$1.mini > $TARGET_DIR/$1.s
+gcc $TARGET_DIR/$1.s -o $TARGET_DIR/$1.out
