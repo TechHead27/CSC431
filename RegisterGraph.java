@@ -73,7 +73,7 @@ public class RegisterGraph
    public String toString()
    {
       StringBuilder ret = new StringBuilder();
-      ret.append("====================");
+      ret.append("====================\n");
       for (String r1 : graph.keySet())
       {
          for (String r2 : graph.get(r1))
@@ -82,7 +82,7 @@ public class RegisterGraph
          ret.append("\n");
       }
 
-      ret.append("=====================");
+      ret.append("=====================\n");
       return ret.toString();
    }
 }
