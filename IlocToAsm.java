@@ -244,11 +244,12 @@ public class IlocToAsm
          iter.next().calculateGenKillSets();
 
       iter = head.iterator();
-      boolean unchanged = true;
+      boolean unchanged = false;
 
       while (!unchanged)
       {
          unchanged = true;
+         iter = head.iterator();
          while (iter.hasNext())
             unchanged = unchanged && iter.next().calculateLiveOut();
       }
