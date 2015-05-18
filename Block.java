@@ -191,7 +191,7 @@ public class Block implements Iterable<Block>
             ret += current.printAsm();
          }
       }
-      return ret;
+      return ret + "\n";
    }
 
    public void addIloc(Iloc instruction)
