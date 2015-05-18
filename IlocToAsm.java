@@ -9,9 +9,9 @@ public class IlocToAsm
    {
       globals = new ArrayList<String>();
       header = new Block("header: ");
-      header.addIloc(new Iloc("print:\n.string \"%d\\n\""));
+      header.addIloc(new Iloc("print:\n.string \"%ld\\n\""));
       header.addIloc(new Iloc(".text"));
-      header.addIloc(new Iloc("scan:\n.string \"%d\""));
+      header.addIloc(new Iloc("scan:\n.string \"%ld\""));
       header.addIloc(new Iloc(".text"));
       header.addIloc(new Iloc(".comm scanVar,8,8"));
       header.addIloc(new Iloc(".globl main"));
