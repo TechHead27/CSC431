@@ -289,7 +289,7 @@ expression
          }
          $typeName = $lft.typeName;
       }
-   |  ^((ast=LT | ast=GT | ast=NE | ast=LE | ast=GE) lft=expression rht=expression)
+   |  ^((ast=LT | ast=GT | ast=LE | ast=GE) lft=expression rht=expression)
       {
          if (!($lft.typeName.getClass().equals(IntType.class) && $rht.typeName.getClass().equals(IntType.class)))
          {
@@ -297,9 +297,9 @@ expression
          }
          $typeName = new BoolType();
       }
-   |  ^(ast=EQ lft=expression rht=expression)
+   |  ^((ast=EQ | ast=NE) lft=expression rht=expression)
       {
-         if (!($lft.typeName.getClass().equals($rht.typeName.getClass())))
+         if (!($lft.typeName.equals($rht.typeName)))
          {
             throw new SyntaxException("Need same types at " + $ast.line);
          }
