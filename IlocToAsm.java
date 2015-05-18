@@ -128,7 +128,7 @@ public class IlocToAsm
             ret.add(new Instruction("movq", input.getReg(0), "%rax"));
             ret.add(new Instruction("movq", "%rax", "%rdx"));
             ret.add(new Instruction("sarq", "$63", "%rdx"));
-            ret.add(new Instruction("idviq", input.getReg(1)));
+            ret.add(new Instruction("idivq", input.getReg(1)));
             ret.add(new Instruction("movq", "%rax", input.getReg(2)));
             break;
          case "loadinargument":
@@ -292,7 +292,12 @@ public class IlocToAsm
 
       // Add stack reservation code to head
       ArrayList<Instruction> insts = head.getAssembly();
-      insts.add(1, new Instruction("subq", "$" + spilled.size()*8, "%rsp"));
+      insts.add(1, new Instruction("push", "%rbx"));
+      insts.add(2, new Instruction("push", "%r12"));
+      insts.add(3, new Instruction("push", "%r13"));
+      insts.add(4, new Instruction("push", "%r14"));
+      insts.add(5, new Instruction("push", "%r15"));
+      insts.add(6, new Instruction("subq", "$" + spilled.size()*8, "%rsp"));
       head.setAssembly(insts);
 
       for (Block b : head)
@@ -300,7 +305,12 @@ public class IlocToAsm
          if (b.getLabel().contains(":end"))
          {
             insts = b.getAssembly();
-            insts.add(insts.size() - 1, new Instruction("addq", "$" + spilled.size()*8, "%rsp"));
+            insts.add(insts.size() - 1, new Instruction("pop", "%rbx"));
+            insts.add(insts.size() - 2, new Instruction("pop", "%r12"));
+            insts.add(insts.size() - 3, new Instruction("pop", "%r13"));
+            insts.add(insts.size() - 4, new Instruction("pop", "%r14"));
+            insts.add(insts.size() - 5, new Instruction("pop", "%r15"));
+            insts.add(insts.size() - 6, new Instruction("addq", "$" + spilled.size()*8, "%rsp"));
             b.setAssembly(insts);
          }
       }
