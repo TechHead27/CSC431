@@ -251,7 +251,10 @@ public class IlocToAsm
          unchanged = true;
          iter = head.iterator();
          while (iter.hasNext())
-            unchanged = unchanged && iter.next().calculateLiveOut();
+         {
+            Block next = iter.next();
+            unchanged = unchanged && next.calculateLiveOut();
+         }
       }
 
       iter = head.iterator();
