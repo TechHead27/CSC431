@@ -10,3 +10,4 @@ TypeCheck.java
 MiniLexer.java
 MiniParser.java
 BuildCFG.java
+benchmarks/*
