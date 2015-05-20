@@ -5,7 +5,7 @@ public class Instruction
    private String inst;
    private String arg1;
    private String arg2;
-   private int offset = 0;
+   private int offset = -1;
    private boolean first;
 
    public Instruction(String inst, String arg1, String arg2, String offset, boolean first)
@@ -157,7 +157,7 @@ public class Instruction
    public String toString()
    {
       String ret = inst;
-      if (offset == 0)
+      if (offset == -1)
       {
          if (!arg1.isEmpty())
             ret += " " + arg1;
@@ -167,9 +167,9 @@ public class Instruction
       else
       {
          if (first)
-            ret += " " + offset +"(" + arg1 + "), " + arg2;
+            ret += " " + (offset == 0 ? "" : offset) +"(" + arg1 + "), " + arg2;
          else
-            ret += " " + arg1 + ", " + offset + "(" + arg2 + ")";
+            ret += " " + arg1 + ", " + (offset == 0 ? "" : offset) + "(" + arg2 + ")";
       }
       return ret;
    }
