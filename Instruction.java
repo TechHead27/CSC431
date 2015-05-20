@@ -83,6 +83,12 @@ public class Instruction
            ret.add(arg2);
            break;
 
+         case "movq":
+           if (offset != -1) {
+             ret.add(arg1);
+             ret.add(arg2);
+           }
+
         default:
            if (!arg1.isEmpty() && arg1.charAt(0) != '$' && !arg1.equals("$scan") && !arg1.contains("scanVar") && !arg1.equals("$print"))
               ret.add(arg1);
