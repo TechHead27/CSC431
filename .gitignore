@@ -11,3 +11,4 @@ MiniLexer.java
 MiniParser.java
 BuildCFG.java
 benchmarks/*
+*.c
