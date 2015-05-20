@@ -9,7 +9,9 @@ public class IlocToAsm
    {
       globals = new ArrayList<String>();
       header = new Block("header: ");
-      header.addIloc(new Iloc("print:\n.string \"%ld\\n\""));
+      header.addIloc(new Iloc("printn:\n.string \"%ld\\n\""));
+      header.addIloc(new Iloc(".text"));
+      header.addIloc(new Iloc("prints:\n.string \"%ld \""));
       header.addIloc(new Iloc(".text"));
       header.addIloc(new Iloc("scan:\n.string \"%ld\""));
       header.addIloc(new Iloc(".text"));
@@ -29,7 +31,7 @@ public class IlocToAsm
             ret.add(new Instruction("movq", input.getReg(0), "%rax"));
             break;
          case "print":
-            ret.add(new Instruction("movq", "$print", "%rdi"));
+            ret.add(new Instruction("movq", (input.getReg(1).equals("true") ? "$printn" : "$prints"), "%rdi"));
             ret.add(new Instruction("movq", input.getReg(0), "%rsi"));
             ret.add(new Instruction("xorq", "%rax", "%rax"));
             ret.add(new Instruction("call", "printf"));
@@ -367,7 +369,7 @@ public class IlocToAsm
             if (spilled.contains(arg2))
             {
                insts.get(i).setArg2("%r15");
-               insts.add(i, new Instruction("movq", "%r15", "%rsp", ""+spilled.indexOf(arg2)*8, false));
+               insts.add(i+1, new Instruction("movq", "%r15", "%rsp", ""+spilled.indexOf(arg2)*8, false));
                i++;
             }
             else if (allocations.containsKey(arg2))

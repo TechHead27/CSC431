@@ -197,10 +197,10 @@ assignment
 
 print
    returns [Block end = null;]
-   :  ^(ast=PRINT e=expression[$statement::block] (ENDL)?)
+   :  ^(ast=PRINT e=expression[$statement::block] (newline = ENDL)?)
       {
          end = $statement::block;
-         $end.addIloc(new Iloc("print", "r" + $e.reg));
+         $end.addIloc(new Iloc("print", "r" + $e.reg, (newline == null ? "false" : "true")));
       }
    ;
 
