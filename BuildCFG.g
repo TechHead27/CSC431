@@ -426,11 +426,13 @@ expression[Block currentBlock]
          }
    |  ^(ast=EQ lft=expression[currentBlock] rht=expression[currentBlock])
          {
+            int temp = $function::regValues.size();
+            $function::regValues.add("::1");
             $reg = $function::regValues.size();
             $function::regValues.add("::eq");
             currentBlock.addIloc(new Iloc("loadi", "0", "r" + $reg));
             currentBlock.addIloc(new Iloc("comp", "r" + $lft.reg, "r" + $rht.reg, "ccr"));
-            currentBlock.addIloc(new Iloc("moveqi", "ccr", "1", "r" + $reg));
+            currentBlock.addIloc(new Iloc("moveqi", "r" + temp, "1", "r" + $reg));
          }
    |  ^(ast=AND lft=expression[currentBlock] rht=expression[currentBlock])
          {
