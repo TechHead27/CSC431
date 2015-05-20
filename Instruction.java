@@ -84,7 +84,7 @@ public class Instruction
            break;
 
          case "movq":
-           if (offset != -1) {
+           if (offset != -1 && !first) {
              ret.add(arg1);
              ret.add(arg2);
            }
