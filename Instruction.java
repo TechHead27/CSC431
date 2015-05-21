@@ -5,7 +5,7 @@ public class Instruction
    private String inst;
    private String arg1;
    private String arg2;
-   private int offset = -1;
+   private String offset = "-1";
    private boolean first;
 
    public Instruction(String inst, String arg1, String arg2, String offset, boolean first)
@@ -13,7 +13,7 @@ public class Instruction
       this.inst = inst;
       this.arg1 = arg1;
       this.arg2 = arg2;
-      this.offset = Integer.parseInt(offset);
+      this.offset = offset;
       this.first = first;
    }
    public Instruction(String inst, String arg1, String arg2)
@@ -51,6 +51,13 @@ public class Instruction
       return arg2;
    }
 
+   public boolean sameArgs()
+   {
+      if (arg1.equals(arg2) && offset.equals("-1"))
+        return true;
+      return false;
+   }
+
    public ArrayList<String> getSource()
    {
       ArrayList<String> ret = new ArrayList<String>();
@@ -84,9 +91,10 @@ public class Instruction
            break;
 
          case "movq":
-           if (offset != -1 && !first) {
+           if (!offset.equals("-1") && !first) {
              ret.add(arg1);
              ret.add(arg2);
+             break;
            }
 
         default:
@@ -131,6 +139,11 @@ public class Instruction
            ret.add(arg1);
            break;
 
+        case "movq":
+           if (!offset.equals("-1") && !first) {
+             break;
+           }
+
         default:
            if (!arg2.isEmpty() && !arg2.equals("$scan") && !arg2.contains("scanVar") && !arg2.equals("$print"))
               ret.add(arg2);
@@ -163,7 +176,7 @@ public class Instruction
    public String toString()
    {
       String ret = inst;
-      if (offset == -1)
+      if (offset.equals("-1"))
       {
          if (!arg1.isEmpty())
             ret += " " + arg1;
@@ -173,9 +186,9 @@ public class Instruction
       else
       {
          if (first)
-            ret += " " + (offset == 0 ? "" : offset) +"(" + arg1 + "), " + arg2;
+            ret += " " + (offset.equals("0") ? "" : offset) +"(" + arg1 + "), " + arg2;
          else
-            ret += " " + arg1 + ", " + (offset == 0 ? "" : offset) + "(" + arg2 + ")";
+            ret += " " + arg1 + ", " + (offset.equals("0") ? "" : offset) + "(" + arg2 + ")";
       }
       return ret;
    }

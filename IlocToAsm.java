@@ -70,7 +70,7 @@ public class IlocToAsm
                header.addIloc(new Iloc(".comm " + input.getReg(1) + ",8,8"));
                globals.add(input.getReg(1));
             }
-            ret.add(new Instruction("movq", input.getReg(0), input.getReg(1) + "(%rip)"));
+            ret.add(new Instruction("movq", input.getReg(0), "%rip", input.getReg(1), false));
             break;
          case "loadi":
             ret.add(new Instruction("movq", "$" + input.getReg(0), input.getReg(1)));
@@ -107,7 +107,7 @@ public class IlocToAsm
             ret.add(new Instruction("movq", "%rax", input.getReg(0)));
             break;
          case "loadglobal":
-            ret.add(new Instruction("movq", input.getReg(0) + "(%rip)", input.getReg(1)));
+            ret.add(new Instruction("movq", "%rip", input.getReg(1), input.getReg(0), true));
             break;
          case "new":
             ret.add(new Instruction("movq", "$" + input.getReg(0), "%rdi"));
@@ -370,7 +370,8 @@ public class IlocToAsm
             {
                insts.get(i).setArg2("%r15");
                insts.add(i+1, new Instruction("movq", "%r15", "%rsp", ""+spilled.indexOf(arg2)*8, false));
-               i++;
+               insts.add(i, new Instruction("movq", "%rsp", "%r15", ""+spilled.indexOf(arg2)*8, true));
+               i+=2;
             }
             else if (allocations.containsKey(arg2))
             {

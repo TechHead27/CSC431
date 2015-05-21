@@ -84,7 +84,7 @@ function
            ArrayList<String> regValues;
            HashMap<String, Type> localHash;}
    @init { $function::count = 0; $function::regValues = new ArrayList<String>();
-           $function::localHash = new HashMap<String, Type>(sTable);}
+           $function::localHash = new HashMap<String, Type>();}
    :  ^(ast=FUN id=ID { start = new Block($id.text + ":start");
                         start.addIloc(new Iloc($id.text + ":"));
                         $function::name = $id.text;
@@ -191,6 +191,8 @@ assignment
          else
          {
             $end.addIloc(new Iloc("mov", "r" + $e.reg, "r" + $l.reg));
+            if ($l.isGlobal)
+               $end.addIloc(new Iloc("storeglobal", "r" + $l.reg, $l.field_name));
          }
       }
    ;
@@ -211,6 +213,8 @@ read
          end = $statement::block;
          $function::regValues.add("::read");
          end.addIloc(new Iloc("read", "r" + $l.reg));
+         if ($l.isGlobal)
+            $end.addIloc(new Iloc("storeglobal", "r" + $l.reg, $l.field_name));
       }
    ;
 
