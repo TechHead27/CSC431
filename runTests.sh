@@ -17,7 +17,7 @@ for benchtest in `ls`; do
    cd $benchtest
    echo "Testing $benchtest..."
    bash $COMPILE $benchtest
-   timeout --signal=KILL 5 ./$benchtest.out < input > test_out
+   timeout --signal=KILL 60 ./$benchtest.out < input > test_out
    diff -q output test_out
    if [ $? -eq 0 ]; then total=$((total+1)); fi
    cd ..
