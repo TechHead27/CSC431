@@ -211,10 +211,20 @@ read
    :  ^(ast=READ l=lvalue[false])
       {
          end = $statement::block;
-         $function::regValues.add("::read");
-         end.addIloc(new Iloc("read", "r" + $l.reg));
-         if ($l.isGlobal)
-            $end.addIloc(new Iloc("storeglobal", "r" + $l.reg, $l.field_name));
+         
+         if ($l.dot)
+         {
+            int reg = $function::regValues.size();
+            $function::regValues.add("::read");
+            end.addIloc(new Iloc("read", "r" + reg));
+            $end.addIloc(new Iloc("storeai", "r" + reg,  "r" + $l.reg, ""+((StructType)$l.typeName).getFieldOffset($l.field_name)));
+         }
+         else
+         {   
+            end.addIloc(new Iloc("read", "r" + $l.reg));
+            if ($l.isGlobal)
+               $end.addIloc(new Iloc("storeglobal", "r" + $l.reg, $l.field_name));
+         }
       }
    ;
 
