@@ -12,3 +12,4 @@ MiniParser.java
 BuildCFG.java
 benchmarks/*
 *.c
+*.debug
