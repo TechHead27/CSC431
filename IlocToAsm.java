@@ -264,6 +264,21 @@ public class IlocToAsm
       while (iter.hasNext())
          iter.next().calculateInterference(g);
 
+      for (Block b : head)
+      {
+         System.err.println(b.getLabel());
+         System.err.println(b.printIloc());
+         String livenow = "";
+         String liveout = "";
+         for (String n : b.getLiveNow())
+            livenow += " " + n;
+         for (String n : b.getLiveOut())
+            liveout += " " + n;
+         System.err.println("LiveOut: " + liveout);
+         System.err.println("LiveNow: " + livenow);
+         System.err.println("\n==============================");
+      }
+
       System.err.print(g.toString());
       HashMap<String, String> allocations = new HashMap<String, String>();
       LinkedList<String> stack = constructStack(g);

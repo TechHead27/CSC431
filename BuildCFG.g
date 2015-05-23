@@ -233,8 +233,6 @@ conditional
    @init { end = new Block($function::name + ":ifend:" + $function::count);
            Block thenBlock = new Block($function::name + ":then:" + $function::count);
            Block elseBlock = new Block($function::name + ":else:" + $function::count);
-           thenBlock.connect(end);
-           elseBlock.connect(end);
            $function::count++; }
    :  ^(ast=IF
             {
@@ -251,8 +249,18 @@ conditional
                      thenBlock.addIloc(new Iloc("L" + then_cond + ":"));
                      end.addIloc(new Iloc("L" + finally_cond + ":"));
                   }
-              t=block[thenBlock] {elseBlock.addIloc(new Iloc("jumpi", "L" + finally_cond)); elseBlock.addIloc(new Iloc("L" + else_cond + ":")); $statement::block.connect(thenBlock); $statement::block.connect(elseBlock);}
+              t=block[thenBlock] {$t.end.connect(end); elseBlock.addIloc(new Iloc("jumpi", "L" + finally_cond)); elseBlock.addIloc(new Iloc("L" + else_cond + ":")); $statement::block.connect(thenBlock); $statement::block.connect(elseBlock);}
               (e=block[elseBlock])?)
+               {
+               if ($e.end == null)
+               {
+                  elseBlock.connect(end);
+               }
+               else
+               {
+                  $e.end.connect(end);
+               }
+            }
    ;
 
 loop

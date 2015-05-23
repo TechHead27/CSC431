@@ -15,6 +15,7 @@ public class Block implements Iterable<Block>
    private HashSet<String> Gen = new HashSet<String>();
    private HashSet<String> Kill = new HashSet<String>();
    private HashSet<String> LiveOut = new HashSet<String>();
+   private HashSet<String> LiveNow;
 
    private class BlockIterator implements Iterator<Block>
    {
@@ -127,32 +128,61 @@ public class Block implements Iterable<Block>
       String ret = "";
       LinkedList<Block> toVisit = new LinkedList<Block>();
       toVisit.offer(this);
+      ArrayList<String> elses = new ArrayList<String>();
 
       while (!toVisit.isEmpty())
       {
-         Block current = toVisit.poll();
+         Block current = toVisit.pop();
          if (!(current.visited))
          {
-            current.visited = true;
             String[] parts = current.label.split(":");
-            if (parts[1].equals("then"))
+            
+            if(parts[1].equals("ifend") && elses.indexOf(parts[2]) != -1)
             {
-               for (int i = current.succ.size()-1; i > 0; i--)
-                  toVisit.push(current.succ.get(i));
-            }
-            else if (parts[1].equals("else"))
-            {
-               toVisit.push(current.succ.get(0));
-               for (int i = current.succ.size()-1; i > 0; i--)
-                  toVisit.push(current.succ.get(i));
+               String search = parts[0] + ":else:" + parts[2];
+               Block elseBlock = null;
+               for (Block b: toVisit)
+               {
+                  if (b.label.equals(search))
+                     elseBlock = b;
+               }
+               if (elseBlock != null)
+               { 
+                  toVisit.remove(elseBlock);
+                  toVisit.push(current);
+                  toVisit.push(elseBlock);
+               }
+               else
+               {
+                  System.err.println("I'm broken. fix me");
+               }
             }
             else
             {
-               for (int i = current.succ.size()-1; i >= 0; i--)
-                  toVisit.push(current.succ.get(i));
+               current.visited = true;
+               if (parts[1].equals("then"))
+               {
+                  elses.add(parts[2]);
+                  for (int i = current.succ.size()-1; i >= 0; i--)
+                     toVisit.push(current.succ.get(i));
+               }
+               else if (parts[1].equals("else"))
+               {
+                  elses.remove(parts[2]);
+                  if (!current.succ.isEmpty())
+                  {
+                     for (int i = current.succ.size()-1; i >= 0; i--)
+                        toVisit.push(current.succ.get(i));
+                  }
+               }
+               else
+               {
+                  for (int i = current.succ.size()-1; i >= 0; i--)
+                     toVisit.push(current.succ.get(i));
+               }
+               ret += current.toString();
+               ret += current.printIloc();
             }
-            ret += current.toString();
-            ret += current.printIloc();
          }
       }
       return ret;
@@ -164,31 +194,60 @@ public class Block implements Iterable<Block>
       String ret = "";
       LinkedList<Block> toVisit = new LinkedList<Block>();
       toVisit.offer(this);
+      ArrayList<String> elses = new ArrayList<String>();
 
       while (!toVisit.isEmpty())
       {
-         Block current = toVisit.poll();
-         if (!(current.ASMvisited))
+         Block current = toVisit.pop();
+         if (!(current.visited))
          {
-            current.ASMvisited = true;
             String[] parts = current.label.split(":");
-            if (parts[1].equals("then"))
+            
+            if(parts[1].equals("ifend") && elses.indexOf(parts[2]) != -1)
             {
-               for (int i = current.succ.size()-1; i > 0; i--)
-                  toVisit.push(current.succ.get(i));
-            }
-            else if (parts[1].equals("else"))
-            {
-               toVisit.push(current.succ.get(0));
-               for (int i = current.succ.size()-1; i > 0; i--)
-                  toVisit.push(current.succ.get(i));
+               String search = parts[0] + ":else:" + parts[2];
+               Block elseBlock = null;
+               for (Block b: toVisit)
+               {
+                  if (b.label.equals(search))
+                     elseBlock = b;
+               }
+               if (elseBlock != null)
+               { 
+                  toVisit.remove(elseBlock);
+                  toVisit.push(current);
+                  toVisit.push(elseBlock);
+               }
+               else
+               {
+                  System.err.println("I'm broken. fix me");
+               }
             }
             else
             {
-               for (int i = current.succ.size()-1; i >= 0; i--)
-                  toVisit.push(current.succ.get(i));
+               current.visited = true;
+               if (parts[1].equals("then"))
+               {
+                  elses.add(parts[2]);
+                  for (int i = current.succ.size()-1; i >= 0; i--)
+                     toVisit.push(current.succ.get(i));
+               }
+               else if (parts[1].equals("else"))
+               {
+                  elses.remove(parts[2]);
+                  if (!current.succ.isEmpty())
+                  {
+                     for (int i = current.succ.size()-1; i >= 0; i--)
+                        toVisit.push(current.succ.get(i));
+                  }
+               }
+               else
+               {
+                  for (int i = current.succ.size()-1; i >= 0; i--)
+                     toVisit.push(current.succ.get(i));
+               }
+               ret += current.printAsm();
             }
-            ret += current.printAsm();
          }
       }
       return ret + "\n";
@@ -238,7 +297,7 @@ public class Block implements Iterable<Block>
 
    public void calculateInterference(RegisterGraph g)
    {
-      HashSet<String> LiveNow = (HashSet<String>)LiveOut.clone();
+      LiveNow = (HashSet<String>)LiveOut.clone();
 
       for (int i = assembly.size() - 1; i >= 0; i--)
       {
@@ -275,5 +334,15 @@ public class Block implements Iterable<Block>
    public void setAssembly(ArrayList<Instruction> insts)
    {
       assembly = insts;
+   }
+
+   public HashSet<String> getLiveOut()
+   {
+      return LiveOut;
+   }
+
+   public HashSet<String> getLiveNow()
+   {
+      return LiveNow;
    }
 }
