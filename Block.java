@@ -2,6 +2,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Block implements Iterable<Block>
 {
@@ -15,6 +17,9 @@ public class Block implements Iterable<Block>
    private HashSet<String> Gen = new HashSet<String>();
    private HashSet<String> Kill = new HashSet<String>();
    private HashSet<String> LiveOut = new HashSet<String>();
+   private HashMap<String, String> CopyIn = new HashMap<String, String>();
+   private HashMap<String, String> CopyGen = new HashMap<String, String>();
+   private HashSet<String> CopyKill = new HashSet<String>();
 
    private class BlockIterator implements Iterator<Block>
    {
@@ -218,6 +223,24 @@ public class Block implements Iterable<Block>
          Kill.addAll(i.getTarget());
       }
    }
+   
+   public void calculateCopySets()
+   {
+      for (int i = ilocs.size() - 1; i >= 0; i--)
+      {
+         Iloc inst = ilocs.get(i);
+         if (inst.getInst().equals("mov"))
+         {
+            if (!CopyKill.contains(inst.getReg(1)))
+            {
+               CopyGen.put(inst.getReg(0), inst.getReg(1));
+            }
+
+            if (inst.getTarget() != null)
+               CopyKill.add(inst.getTarget());
+         }
+      }
+   }
 
    // returns whether LiveOut is unchanged
    public boolean calculateLiveOut()
@@ -234,6 +257,46 @@ public class Block implements Iterable<Block>
       }
 
       return oldSize == LiveOut.size();
+   }
+
+   // returns whether unchanged
+   public boolean calculateCopyIn()
+   {
+      int oldSize = CopyIn.size();
+      HashMap<String, String> newCopies = null;
+
+      for (Block b : pred)
+      {
+         HashMap<String, String> difference = (HashMap<String, String>)b.CopyIn.clone();
+         Iterator<Map.Entry<String, String>> copies = difference.entrySet().iterator();
+
+         while (copies.hasNext())
+         {
+            if (b.CopyKill.contains(copies.next().getValue()))
+               copies.remove();
+         }
+
+         difference.putAll(b.CopyGen);
+
+         // Calculate intersection
+         if (newCopies == null)
+         {
+            newCopies = difference;
+         }
+         else
+         {
+            copies = newCopies.entrySet().iterator();
+            while (copies.hasNext())
+            {
+               Map.Entry<String, String> current = copies.next();
+               if (!current.getValue().equals(difference.get(current.getKey())))
+                  copies.remove();
+            }
+         }
+      }
+
+      CopyIn = newCopies;
+      return oldSize == CopyIn.size();
    }
 
    public void calculateInterference(RegisterGraph g)

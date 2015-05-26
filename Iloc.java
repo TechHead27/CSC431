@@ -63,6 +63,65 @@ public class Iloc
          return null;
    }
 
+   public String getTarget()
+   {
+      switch (instruction)
+      {
+         case "loadinargument":
+            return args[2];
+            //break;
+
+         case "mov":
+            return args[1];
+            //break;
+
+         case "read":
+            return args[0];
+            //break;
+
+         case "loadi":
+            return args[1];
+            //break;
+
+         case "loadglobal":
+            return args[1];
+            //break;
+
+         case "loadai":
+            return args[2];
+            //break;
+
+         case "movlti":
+         case "movgti":
+         case "movnei":
+         case "movlei":
+         case "movgei":
+         case "moveqi":
+            return args[2];
+            //break;
+
+         case "add":
+         case "sub":
+         case "mult":
+         case "div":
+         case "and":
+         case "or":
+            return args[2];
+            //break;
+
+         case "xori":
+            return args[2];
+            //break;
+
+         case "new":
+            return args[1];
+            //break;
+
+         default:
+            return null;
+      }
+   }
+
 	//access would be iloc.args[0,1,2]
 
 }
