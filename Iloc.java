@@ -45,6 +45,11 @@ public class Iloc
 		return ret;
 	}
 
+   public void setArg(int index, String arg)
+   {
+      args[index] = arg;
+   }
+
 	public void addArg(String arg)
 	{
 		args[numArgs++] = arg;

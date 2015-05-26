@@ -295,8 +295,21 @@ public class Block implements Iterable<Block>
          }
       }
 
-      CopyIn = newCopies;
+      if (newCopies != null)
+         CopyIn = newCopies;
       return oldSize == CopyIn.size();
+   }
+
+   public void propagateCopies()
+   {
+      for (Iloc current : ilocs)
+      {
+         for (int i = 0; current.getReg(i) != null; i++)
+         {
+            if (CopyIn.containsKey(current.getReg(i)))
+               current.setArg(i, CopyIn.get(current.getReg(i)));
+         }
+      }
    }
 
    public void calculateInterference(RegisterGraph g)

@@ -264,7 +264,6 @@ public class IlocToAsm
       while (iter.hasNext())
          iter.next().calculateInterference(g);
 
-      System.err.print(g.toString());
       HashMap<String, String> allocations = new HashMap<String, String>();
       LinkedList<String> stack = constructStack(g);
       ArrayList<String> spilled = new ArrayList<String>();
