@@ -51,7 +51,7 @@ public class Compile
                }
             }
 
-            converter.Convert(functionBlocks);
+               converter.Convert(functionBlocks);
 
             if (_useless)
             {
@@ -61,7 +61,8 @@ public class Compile
                }
             }
 
-            converter.AllocateRegisters(functionBlocks);
+            if (!_debug)
+               converter.AllocateRegisters(functionBlocks);
 
             for (Block b : functionBlocks)
             {
@@ -79,12 +80,14 @@ public class Compile
    private static final String DUMPIL = "-dumpIL";
    private static final String COPIES = "-copy";
    private static final String USELESS = "-useless";
+   private static final String DEBUG = "-debug";
 
    private static String _inputFile = null;
    private static boolean _displayAST = false;
    private static boolean _dumpIL = false;
    private static boolean _copy = false;
    private static boolean _useless = false;
+   private static boolean _debug = false;
 
    private static void parseParameters(String [] args)
    {
@@ -105,6 +108,10 @@ public class Compile
          else if (args[i].equals(USELESS))
          {
             _useless = true;
+         }
+         else if (args[i].equals(DEBUG))
+         {
+            _debug = true;
          }
          else if (args[i].charAt(0) == '-')
          {
