@@ -114,7 +114,7 @@ public class Iloc
          case "sub":
             return new int[]{0,1};
          default: // for labels
-            return null;
+            return new int[]{};
       }
    }
 

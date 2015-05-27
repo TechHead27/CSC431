@@ -361,14 +361,23 @@ public class Block implements Iterable<Block>
       return oldSize == CopyIn.size();
    }
 
+   // replace sources
    public void propagateCopies()
    {
+      HashMap<String, String> reverse = new HashMap<String, String>();
+      for (Map.Entry<String, String> entry : CopyIn.entrySet())
+         reverse.put(entry.getValue(), entry.getKey());
+
       for (Iloc current : ilocs)
       {
-         for (int i = 0; current.getReg(i) != null; i++)
+         if (current.getTarget() != null)
+            reverse.remove(current.getTarget());
+
+         current.replace(reverse);
+
+         if (current.getInst().equals("mov"))
          {
-            if (CopyIn.containsKey(current.getReg(i)))
-               current.setArg(i, CopyIn.get(current.getReg(i)));
+            reverse.put(current.getReg(1), current.getReg(0));
          }
       }
    }
