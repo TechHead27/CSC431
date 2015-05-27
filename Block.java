@@ -213,6 +213,8 @@ public class Block implements Iterable<Block>
 
    public void calculateGenKillSets()
    {
+      Kill.clear();
+      Gen.clear();
       for (Instruction i : assembly)
       {
          for (String source : i.getSource())
@@ -335,6 +337,66 @@ public class Block implements Iterable<Block>
 
          LiveNow.removeAll(current.getTarget());
          LiveNow.addAll(current.getSource());
+      }
+   }
+
+   public void RemoveUseless()
+   {
+      for (Block b : this)
+      {
+         b.calculateGenKillSets();
+      }
+
+      boolean unchanged = false;
+      while (!unchanged)
+      {
+         unchanged = true;
+         for (Block b : this)
+         {
+            unchanged = unchanged && b.calculateLiveOut();
+         }
+      }
+
+      for (Block b : this)
+      {
+         HashSet<String> LiveNow = (HashSet<String>)b.LiveOut.clone();
+
+         for (int i = b.assembly.size() - 1; i >= 0; i--)
+         {
+            Instruction current = b.assembly.get(i);
+
+            boolean contains = false;
+            for (String target : current.getTarget())
+               contains = contains || LiveNow.contains(target);
+
+            if (!contains && !KeepInstruction(current))
+               b.assembly.remove(i);
+            else
+            {
+               LiveNow.removeAll(current.getTarget());
+               LiveNow.addAll(current.getSource());
+            }
+         }
+      }
+   }
+
+   private static boolean KeepInstruction(Instruction i)
+   {
+      switch (i.getInst())
+      {
+         case "jmp":
+         case "call":
+         case "ret":
+         case "cmp":
+         case "je":
+         case "jne":
+            return true;
+
+         default:
+            for (String target : i.getTarget())
+               if (target.contains("%"))
+                  return true;
+            return i.getInst().contains(":");
       }
    }
 

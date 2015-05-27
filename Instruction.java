@@ -86,6 +86,9 @@ public class Instruction
         case "cmovge":
         case "cmove":
         case "cmovne":
+        case "addq":
+        case "subq":
+        case "imulq":
            ret.add(arg1);
            ret.add(arg2);
            break;
