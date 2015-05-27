@@ -226,15 +226,13 @@ public class IlocToAsm
       
       for (Iloc i : header.getIlocs())
          header.addInstructions(ConvertInst(i));
-
-      AllocateRegisters(blocks);
-      blocks.add(0, header);
    }
 
    public void AllocateRegisters(ArrayList<Block> blocks)
    {
       for (Block b : blocks)
          AllocateFunction(b);
+      blocks.add(0, header);
    }
 
    private void AllocateFunction(Block head)

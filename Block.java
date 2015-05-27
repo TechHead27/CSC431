@@ -2,6 +2,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Block implements Iterable<Block>
 {
@@ -16,6 +18,9 @@ public class Block implements Iterable<Block>
    private HashSet<String> Kill = new HashSet<String>();
    private HashSet<String> LiveOut = new HashSet<String>();
    private HashSet<String> LiveNow;
+   private HashMap<String, String> CopyIn = new HashMap<String, String>();
+   private HashMap<String, String> CopyGen = new HashMap<String, String>();
+   private HashSet<String> CopyKill = new HashSet<String>();
 
    private class BlockIterator implements Iterator<Block>
    {
@@ -267,6 +272,8 @@ public class Block implements Iterable<Block>
 
    public void calculateGenKillSets()
    {
+      Kill.clear();
+      Gen.clear();
       for (Instruction i : assembly)
       {
          for (String source : i.getSource())
@@ -275,6 +282,24 @@ public class Block implements Iterable<Block>
                Gen.add(source);
          }
          Kill.addAll(i.getTarget());
+      }
+   }
+   
+   public void calculateCopySets()
+   {
+      for (int i = ilocs.size() - 1; i >= 0; i--)
+      {
+         Iloc inst = ilocs.get(i);
+         if (inst.getInst().equals("mov"))
+         {
+            if (!CopyKill.contains(inst.getReg(1)))
+            {
+               CopyGen.put(inst.getReg(0), inst.getReg(1));
+            }
+
+            if (inst.getTarget() != null)
+               CopyKill.add(inst.getTarget());
+         }
       }
    }
 
@@ -293,6 +318,59 @@ public class Block implements Iterable<Block>
       }
 
       return oldSize == LiveOut.size();
+   }
+
+   // returns whether unchanged
+   public boolean calculateCopyIn()
+   {
+      int oldSize = CopyIn.size();
+      HashMap<String, String> newCopies = null;
+
+      for (Block b : pred)
+      {
+         HashMap<String, String> difference = (HashMap<String, String>)b.CopyIn.clone();
+         Iterator<Map.Entry<String, String>> copies = difference.entrySet().iterator();
+
+         while (copies.hasNext())
+         {
+            if (b.CopyKill.contains(copies.next().getValue()))
+               copies.remove();
+         }
+
+         difference.putAll(b.CopyGen);
+
+         // Calculate intersection
+         if (newCopies == null)
+         {
+            newCopies = difference;
+         }
+         else
+         {
+            copies = newCopies.entrySet().iterator();
+            while (copies.hasNext())
+            {
+               Map.Entry<String, String> current = copies.next();
+               if (!current.getValue().equals(difference.get(current.getKey())))
+                  copies.remove();
+            }
+         }
+      }
+
+      if (newCopies != null)
+         CopyIn = newCopies;
+      return oldSize == CopyIn.size();
+   }
+
+   public void propagateCopies()
+   {
+      for (Iloc current : ilocs)
+      {
+         for (int i = 0; current.getReg(i) != null; i++)
+         {
+            if (CopyIn.containsKey(current.getReg(i)))
+               current.setArg(i, CopyIn.get(current.getReg(i)));
+         }
+      }
    }
 
    public void calculateInterference(RegisterGraph g)
@@ -318,6 +396,66 @@ public class Block implements Iterable<Block>
 
          LiveNow.removeAll(current.getTarget());
          LiveNow.addAll(current.getSource());
+      }
+   }
+
+   public void RemoveUseless()
+   {
+      for (Block b : this)
+      {
+         b.calculateGenKillSets();
+      }
+
+      boolean unchanged = false;
+      while (!unchanged)
+      {
+         unchanged = true;
+         for (Block b : this)
+         {
+            unchanged = unchanged && b.calculateLiveOut();
+         }
+      }
+
+      for (Block b : this)
+      {
+         HashSet<String> LiveNow = (HashSet<String>)b.LiveOut.clone();
+
+         for (int i = b.assembly.size() - 1; i >= 0; i--)
+         {
+            Instruction current = b.assembly.get(i);
+
+            boolean contains = false;
+            for (String target : current.getTarget())
+               contains = contains || LiveNow.contains(target);
+
+            if (!contains && !KeepInstruction(current))
+               b.assembly.remove(i);
+            else
+            {
+               LiveNow.removeAll(current.getTarget());
+               LiveNow.addAll(current.getSource());
+            }
+         }
+      }
+   }
+
+   private static boolean KeepInstruction(Instruction i)
+   {
+      switch (i.getInst())
+      {
+         case "jmp":
+         case "call":
+         case "ret":
+         case "cmp":
+         case "je":
+         case "jne":
+            return true;
+
+         default:
+            for (String target : i.getTarget())
+               if (target.contains("%"))
+                  return true;
+            return i.getInst().contains(":");
       }
    }
 

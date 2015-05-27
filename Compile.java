@@ -32,6 +32,17 @@ public class Compile
          {
             ArrayList<Block> functionBlocks = translate(tree, tokens);
             System.err.println("No type errors.");
+
+            // Optimizations
+            if (_copy)
+            {
+               for (Block b : functionBlocks)
+               {
+                  CopyPropagator.analyze(b);
+                  CopyPropagator.propagateCopies(b);
+               }
+            }
+
             if (_dumpIL)
             {
                for (Block b : functionBlocks)
@@ -39,7 +50,18 @@ public class Compile
                   System.out.println(b.getGraph());
                }
             }
+
             converter.Convert(functionBlocks);
+
+            if (_useless)
+            {
+               for (Block b : functionBlocks)
+               {
+                  b.RemoveUseless();
+               }
+            }
+
+            converter.AllocateRegisters(functionBlocks);
 
             for (Block b : functionBlocks)
             {
@@ -55,10 +77,14 @@ public class Compile
 
    private static final String DISPLAYAST = "-displayAST";
    private static final String DUMPIL = "-dumpIL";
+   private static final String COPIES = "-copy";
+   private static final String USELESS = "-useless";
 
    private static String _inputFile = null;
    private static boolean _displayAST = false;
    private static boolean _dumpIL = false;
+   private static boolean _copy = false;
+   private static boolean _useless = false;
 
    private static void parseParameters(String [] args)
    {
@@ -71,6 +97,14 @@ public class Compile
          else if (args[i].equals(DUMPIL))
          {
             _dumpIL = true;
+         }
+         else if (args[i].equals(COPIES))
+         {
+            _copy = true;
+         }
+         else if (args[i].equals(USELESS))
+         {
+            _useless = true;
          }
          else if (args[i].charAt(0) == '-')
          {
