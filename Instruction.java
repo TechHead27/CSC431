@@ -89,6 +89,8 @@ public class Instruction
         case "addq":
         case "subq":
         case "imulq":
+        case "or":
+        case "and":
            ret.add(arg1);
            ret.add(arg2);
            break;
@@ -173,6 +175,26 @@ public class Instruction
    public String getArg2()
    {
       return arg2;
+   }
+
+   public boolean KeepInstruction()
+   {
+      switch (inst)
+      {
+         case "jmp":
+         case "call":
+         case "ret":
+         case "cmp":
+         case "je":
+         case "jne":
+            return true;
+
+         default:
+            for (String target : getTarget())
+               if (target.contains("%"))
+                  return true;
+            return inst.contains(":") || !offset.equals("-1");
+      }
    }
 
    @Override

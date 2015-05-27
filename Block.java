@@ -445,7 +445,7 @@ public class Block implements Iterable<Block>
             for (String target : current.getTarget())
                contains = contains || LiveNow.contains(target);
 
-            if (!contains && !KeepInstruction(current))
+            if (!contains && !current.KeepInstruction())
                b.assembly.remove(i);
             else
             {
@@ -453,26 +453,6 @@ public class Block implements Iterable<Block>
                LiveNow.addAll(current.getSource());
             }
          }
-      }
-   }
-
-   private static boolean KeepInstruction(Instruction i)
-   {
-      switch (i.getInst())
-      {
-         case "jmp":
-         case "call":
-         case "ret":
-         case "cmp":
-         case "je":
-         case "jne":
-            return true;
-
-         default:
-            for (String target : i.getTarget())
-               if (target.contains("%"))
-                  return true;
-            return i.getInst().contains(":");
       }
    }
 
