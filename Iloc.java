@@ -1,3 +1,5 @@
+import java.util.*;
+
 public class Iloc
 {
 	private int numArgs; // 0, 1, 2, or 3
@@ -66,6 +68,54 @@ public class Iloc
          return args[i];
       else
          return null;
+   }
+
+   public void replace(HashMap<String,String> reverse)
+   {
+      int[] sources = getSource();
+      for (int i : sources)
+      {
+         String replacing = reverse.get(args[i]);
+         if (replacing != null)
+            args[i] = replacing;
+      }
+   }
+
+   public int[] getSource()
+   {
+      switch (instruction)
+      {
+         case "movlti":
+         case "movgti":
+         case "movnei":
+         case "movlei":
+         case "movgei":
+         case "moveqi":
+            return new int[]{0,2};
+         case "addi":
+         case "brz":
+         case "del":
+         case "loadai":
+         case "mov":
+         case "neg":
+         case "print":
+         case "storeglobal":
+         case "storeoutargument":
+         case "storeret":
+         case "xori":
+            return new int[]{0};
+         case "add":
+         case "and":
+         case "comp":
+         case "div":
+         case "mult":
+         case "or":
+         case "storeai":
+         case "sub":
+            return new int[]{0,1};
+         default: // for labels
+            return null;
+      }
    }
 
    public String getTarget()
