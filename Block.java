@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class Block implements Iterable<Block>
 {
@@ -371,7 +372,14 @@ public class Block implements Iterable<Block>
       for (Iloc current : ilocs)
       {
          if (current.getTarget() != null)
+         {
             reverse.remove(current.getTarget());
+
+            Iterator<Map.Entry<String, String>> entries = reverse.entrySet().iterator();
+            while (entries.hasNext())
+               if (entries.next().getValue().equals(current.getTarget()))
+                  entries.remove();
+         }
 
          current.replace(reverse);
 

@@ -75,9 +75,11 @@ public class Iloc
       int[] sources = getSource();
       for (int i : sources)
       {
-         String replacing = reverse.get(args[i]);
-         if (replacing != null)
-            args[i] = replacing;
+         String replacing = args[i];
+         while (reverse.containsKey(replacing))
+            replacing = reverse.get(replacing);
+
+         args[i] = replacing;
       }
    }
 
@@ -165,12 +167,15 @@ public class Iloc
             //break;
 
          case "xori":
-            return args[2];
+            return args[0];
             //break;
 
          case "new":
             return args[1];
             //break;
+            
+         case "loadret":
+            return args[0];
 
          default:
             return null;
