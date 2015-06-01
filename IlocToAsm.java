@@ -390,6 +390,10 @@ public class IlocToAsm
             {
                insts.get(i).setArg2(allocations.get(arg2));
             }
+
+            if (insts.get(i).uselessMove()) {
+               insts.remove(i--);
+            }
          }
          b.setAssembly(insts);
       }

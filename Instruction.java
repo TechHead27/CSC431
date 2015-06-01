@@ -51,9 +51,9 @@ public class Instruction
       return arg2;
    }
 
-   public boolean sameArgs()
+   public boolean uselessMove()
    {
-      if (arg1.equals(arg2) && offset.equals("-1"))
+      if (arg1.equals(arg2) && offset.equals("-1") && inst.equals("movq"))
         return true;
       return false;
    }
@@ -97,7 +97,8 @@ public class Instruction
 
          case "movq":
            if (!offset.equals("-1") && !first) {
-             ret.add(arg1);
+             if (arg1.charAt(0) != '$')
+               ret.add(arg1);
              ret.add(arg2);
              break;
            }
