@@ -43,6 +43,14 @@ public class Compile
                }
             }
 
+            if (_const)
+            {
+               for (Block b : functionBlocks)
+               {
+                  ConstOpt.transform(b);
+               }
+            }
+
             if (_dumpIL)
             {
                for (Block b : functionBlocks)
@@ -81,6 +89,7 @@ public class Compile
    private static final String COPIES = "-copy";
    private static final String USELESS = "-useless";
    private static final String DEBUG = "-debug";
+   private static final String CONST = "-const";
 
    private static String _inputFile = null;
    private static boolean _displayAST = false;
@@ -88,6 +97,7 @@ public class Compile
    private static boolean _copy = false;
    private static boolean _useless = false;
    private static boolean _debug = false;
+   private static boolean _const = false;
 
    private static void parseParameters(String [] args)
    {
@@ -112,6 +122,10 @@ public class Compile
          else if (args[i].equals(DEBUG))
          {
             _debug = true;
+         }
+         else if (args[i].equals(CONST))
+         {
+            _const = true;
          }
          else if (args[i].charAt(0) == '-')
          {

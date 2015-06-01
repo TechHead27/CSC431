@@ -37,7 +37,32 @@ public class Iloc
 		addArg(r1);
 		addArg(r2);
 		addArg(r3);
-	}	
+	}
+
+   public void swapIloc(String instruction)
+   {
+      this.instruction = instruction;
+      args = new String[3];
+      numArgs = 0;
+   }
+
+   public void swapIloc(String instruction, String r1)
+   {
+      swapIloc(instruction);
+      addArg(r1);
+   }
+
+   public void swapIloc(String instruction, String r1, String r2)
+   {
+      swapIloc(instruction, r1);
+      addArg(r2);
+   }
+
+   public void swapIloc(String instruction, String r1, String r2, String r3)
+   {
+      swapIloc(instruction, r1, r2);
+      addArg(r3);
+   }
 
 	public String toString()
 	{
