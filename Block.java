@@ -22,6 +22,8 @@ public class Block implements Iterable<Block>
    private HashMap<String, String> CopyIn = new HashMap<String, String>();
    private HashMap<String, String> CopyGen = new HashMap<String, String>();
    private HashSet<String> CopyKill = new HashSet<String>();
+   private HashMap<String, Long> ConstantIn = new HashMap<String, Long>();
+   private HashMap<String, Long> ConstantOut = new HashMap<String, Long>();
 
    private class BlockIterator implements Iterator<Block>
    {
@@ -454,6 +456,44 @@ public class Block implements Iterable<Block>
             }
          }
       }
+   }
+
+   public void calculateConstantOut()
+   {
+      for (Iloc i : ilocs)
+         ConstOpt.AddMapping(ConstantOut, i) ;
+   }
+
+   public boolean calculateConstantIn()
+   {
+      int prevSize = ConstantIn.size();
+
+      for (Block b : pred)
+      {
+         if (ConstantIn.isEmpty())
+            ConstantIn.putAll(b.ConstantOut);
+         else
+         {
+            Iterator<Map.Entry<String, Long>> iter = ConstantIn.entrySet().iterator();
+            while (iter.hasNext())
+            {
+               Map.Entry<String, Long> current = iter.next();
+               
+               if (current.getValue() != b.ConstantOut.get(current.getKey()))
+                  iter.remove();
+            }
+         }
+      }
+
+      return prevSize == ConstantIn.size();
+   }
+
+   public void propagateConstants()
+   {
+      HashMap<String, Long> ConstantNow = (HashMap<String, Long>)ConstantIn.clone();
+
+      for (Iloc i : ilocs)
+         ConstOpt.replaceConstant(ConstantNow, i);
    }
 
    public void addInstructions(ArrayList<Instruction> insts)

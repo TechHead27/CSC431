@@ -47,7 +47,7 @@ public class Compile
             {
                for (Block b : functionBlocks)
                {
-                  ConstOpt.transform(b);
+                  ConstOpt.OptimizeConstants(b);
                }
             }
 
