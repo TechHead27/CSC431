@@ -262,7 +262,7 @@ public class IlocToAsm
       while (iter.hasNext())
          iter.next().calculateInterference(g);
 
-      for (Block b : head)
+/*      for (Block b : head)
       {
          System.err.println(b.getLabel());
          System.err.println(b.printIloc());
@@ -275,7 +275,7 @@ public class IlocToAsm
          System.err.println("LiveOut: " + liveout);
          System.err.println("LiveNow: " + livenow);
          System.err.println("\n==============================");
-      }
+      }*/
 
       System.err.print(g.toString());
       HashMap<String, String> allocations = new HashMap<String, String>();
