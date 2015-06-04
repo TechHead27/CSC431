@@ -460,8 +460,9 @@ public class Block implements Iterable<Block>
 
    public void calculateConstantOut()
    {
-      for (Iloc i : ilocs)
-         ConstOpt.AddMapping(ConstantOut, i) ;
+      ConstantOut.putAll(ConstantIn);
+      for (int i = 0; i < ilocs.size(); i++)
+         ConstOpt.AddMapping(ConstantOut, ilocs.get(i), (i == 0 ? null : ilocs.get(i-1))) ;
    }
 
    public boolean calculateConstantIn()
@@ -485,6 +486,10 @@ public class Block implements Iterable<Block>
          }
       }
 
+/*      for (Map.Entry<String, Long> entry : ConstantIn.entrySet())
+         if (!ConstantOut.containsKey(entry.getKey()))
+         ConstantOut.put(entry.getKey(), entry.getValue());*/
+
       return prevSize == ConstantIn.size();
    }
 
@@ -492,8 +497,8 @@ public class Block implements Iterable<Block>
    {
       HashMap<String, Long> ConstantNow = (HashMap<String, Long>)ConstantIn.clone();
 
-      for (Iloc i : ilocs)
-         ConstOpt.replaceConstant(ConstantNow, i);
+      for (int i = 0; i < ilocs.size(); i++)
+         i += ConstOpt.replaceConstant(ConstantNow, ilocs.get(i), ilocs, label);
    }
 
    public void addInstructions(ArrayList<Instruction> insts)
@@ -519,5 +524,15 @@ public class Block implements Iterable<Block>
    public HashSet<String> getLiveNow()
    {
       return LiveNow;
+   }
+
+   public Set<String> getConstOut()
+   {
+      return ConstantOut.keySet();
+   }
+
+   public Set<String> getConstIn()
+   {
+      return ConstantIn.keySet();
    }
 }
