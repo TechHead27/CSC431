@@ -197,9 +197,9 @@ public class Block implements Iterable<Block>
    }
 
    
-   public String printAssembly()
+   public ArrayList<String> printAssembly()
    {
-      String ret = "";
+      ArrayList<String> ret = new ArrayList<String>();
       LinkedList<Block> toVisit = new LinkedList<Block>();
       toVisit.offer(this);
       ArrayList<String> elses = new ArrayList<String>();
@@ -254,11 +254,13 @@ public class Block implements Iterable<Block>
                   for (int i = current.succ.size()-1; i >= 0; i--)
                      toVisit.push(current.succ.get(i));
                }
-               ret += current.printAsm();
+               for (Instruction inst : current.assembly)
+                  ret.add(inst.toString());
             }
          }
       }
-      return ret + "\n";
+      ret.add("\n");
+      return ret;
    }
 
    public void addIloc(Iloc instruction)
