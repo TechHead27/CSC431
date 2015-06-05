@@ -293,7 +293,7 @@ public class ConstOpt
                         else if (left > right)
                             flag = 3;
                         ilocs.remove(iloc);
-                        skip++;
+                        skip--;
                      
                         switch (next.getInst())
                         {
