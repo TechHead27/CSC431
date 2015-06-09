@@ -76,7 +76,7 @@ public class Compile
             for (Block b : functionBlocks)
             {
                ArrayList<String> asm = b.printAssembly();
-               if (_clean)
+               if (_useless)
                {
                   ArrayList<String> temp = reduceCode(asm, b.getLabel(), true);
                   while (asm.size() != temp.size())
@@ -214,7 +214,6 @@ public class Compile
    private static boolean _useless = false;
    private static boolean _debug = false;
    private static boolean _const = false;
-   private static boolean _clean = false;
 
    private static void parseParameters(String [] args)
    {
@@ -243,10 +242,6 @@ public class Compile
          else if (args[i].equals(CONST))
          {
             _const = true;
-         }
-         else if (args[i].equals(CLEAN))
-         {
-            _clean = true;
          }
          else if (args[i].charAt(0) == '-')
          {
