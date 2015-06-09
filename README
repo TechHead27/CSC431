@@ -1,0 +1,11 @@
+To build the project, simply run make. Requires antlr to be in the classpath.
+To run the compiler, run 'java Compile <args> <source>'.
+The available optimization options are:
+   -copy: Copy propogation
+   -useless: Useless code removal
+   -const: Constant folding and propogation
+
+Additionally, the debug flag -dumpIL will cause the ILOC to be printed to the screen.
+For convienience, the compile.sh script can be run from any directory and will compile the
+given source with all optimizations. It should be run as 'bash compile.sh <source>' where 
+source is the name of the source file without the .mini extension.
